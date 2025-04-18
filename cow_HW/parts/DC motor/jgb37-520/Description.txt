@@ -1,0 +1,29 @@
+JGB37-520
+
+Link to CAD model:
+https://grabcad.com/library/jgb37-520-1
+
+#CAD #SolidWorks #3dmodel #JGB37520 #dcgearedmotor #machinedesign
+
+DC geared motor
+
+The 24 volt and 7 rpm version has a stall torque rating of:
+64 kg.cm of torque
+
+Load torque:
+16 kg.cm
+
+Comes in a variety of RPMs:
+3.5 rpm to 960 rpm
+
+Comes in 3 different voltage offerings: 6, 12, 24 Volts
+
+These sites give you more specifications:
+https://abra-electronics.com/electromechanical/motors/gear-motors/metal-gearmotors/jgb37-520-series/jgb37-520-12v200-jgb37-high-torque-class-12vdc-geared-motor-200-rpm.html
+
+https://nfpmotor.com/37mm-dc-gear-motor-model-nfp-jgb37-520
+
+Buy Links:
+https://www.amazon.com/Bringsmart-Turbine-Electric-Self-locking-JGY-370/dp/B07FD98N8J
+
+https://www.aliexpress.us/item/3256805778331196.html
