@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "name": "STM32",
+      "includePath": [
+        "${workspaceFolder}/../USB_HOST/App",
+        "${workspaceFolder}/../USB_HOST/Target",
+        "${workspaceFolder}/../Core/Inc",
+        "${workspaceFolder}/../Drivers/STM32F4xx_HAL_Driver/Inc",
+        "${workspaceFolder}/../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",
+        "${workspaceFolder}/../Middlewares/ST/STM32_USB_Host_Library/Core/Inc",
+        "${workspaceFolder}/../Middlewares/ST/STM32_USB_Host_Library/Class/CDC/Inc",
+        "${workspaceFolder}/../Drivers/CMSIS/Device/ST/STM32F4xx/Include",
+        "${workspaceFolder}/../Drivers/CMSIS/Include"
+      ],
+      "defines": ["DEBUG", "USE_HAL_DRIVER", "STM32F407xx"],
+      "compilerPath": "/opt/homebrew/bin/arm-none-eabi-gcc",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "gcc-arm"
+    }
+  ],
+  "version": 4
+}

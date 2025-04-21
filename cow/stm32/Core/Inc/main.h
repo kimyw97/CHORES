@@ -49,6 +49,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -129,6 +131,10 @@ void Error_Handler(void);
 #define Right_Motor_Encoder_A_GPIO_Port GPIOB
 #define Audio_SCL_Pin GPIO_PIN_6
 #define Audio_SCL_GPIO_Port GPIOB
+#define Left_Motor_PWM_Pin GPIO_PIN_7
+#define Left_Motor_PWM_GPIO_Port GPIOB
+#define Right_Motor_PWM_Pin GPIO_PIN_8
+#define Right_Motor_PWM_GPIO_Port GPIOB
 #define Audio_SDA_Pin GPIO_PIN_9
 #define Audio_SDA_GPIO_Port GPIOB
 #define MEMS_INT2_Pin GPIO_PIN_1

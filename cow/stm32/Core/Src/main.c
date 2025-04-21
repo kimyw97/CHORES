@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -22,11 +22,16 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef enum {
+	FORWARD, BACKWARD, ROTATE_RIGHT, // 오른방향 제자리 회전
+	ROTATE_LEFT,  // 왼 방향 제자리 회전
+	STOP
+} DriveMode;
 
 /* USER CODE END PTD */
 
@@ -47,6 +52,7 @@ I2S_HandleTypeDef hi2s3;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
 
@@ -59,9 +65,18 @@ static void MX_I2C1_Init(void);
 static void MX_I2S3_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_TIM4_Init(void);
 void MX_USB_HOST_Process(void);
 
 /* USER CODE BEGIN PFP */
+void setMotorMode(DriveMode mode);
+void setMotorSpeed(char motor_position, int speed);
+void motorStart();
+void motorShutdown();
+void startEncoder(TIM_HandleTypeDef *htim);
+int16_t readEncoder(TIM_HandleTypeDef *htim);
+int16_t calRPM(char method, int8_t MT, int16_t encoder_count, float time,
+		int8_t PPR, int8_t ratio);
 
 /* USER CODE END PFP */
 
@@ -104,19 +119,69 @@ int main(void)
   MX_USB_HOST_Init();
   MX_TIM3_Init();
   MX_TIM2_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-
+	motorStart();
+	motorShutdown();
+	setMotorSpeed('L', 0);
+	setMotorSpeed('R', 0);
+	setMotorMode(ROTATE_LEFT);
+	HAL_Delay(3000);
+	startEncoder(&htim3);
+	startEncoder(&htim2);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
+	__HAL_TIM_SET_COUNTER(&htim2, 0);
+	int8_t target_distance_cm = 100;
+	int8_t PPR = 11;
+	int8_t GEAR_RATIO = 30;
+	float WHEEL_CIRCUMFERENCE_CM = 2 * 3.1415 * 3.5;
+	setMotorSpeed('L', 60);
+	setMotorSpeed('R', 60);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	while (1) {
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
     /* USER CODE BEGIN 3 */
-  }
+
+		int32_t left_pulse = readEncoder(&htim2);
+		int32_t right_pulse = readEncoder(&htim3) * -1;
+		int32_t left_rotation = left_pulse / (float) (PPR * GEAR_RATIO);
+		int32_t right_rotation = right_pulse / (float) (PPR * GEAR_RATIO);
+		int8_t left_distance = (int8_t) (left_rotation * WHEEL_CIRCUMFERENCE_CM);
+		int8_t right_distance = (int8_t) (right_rotation
+				* WHEEL_CIRCUMFERENCE_CM);
+		int8_t distance_cm = (left_distance + right_distance) / 2.0;
+		if (left_pulse > right_pulse) {
+			// 왼쪽이 더 빨라 → 속도 줄이기
+			setMotorSpeed('L', 60 - 10);
+			setMotorSpeed('R', 60);
+		} else if (left_pulse < right_pulse) {
+			// 오른쪽이 더 빨라 → 속도 줄이기
+			setMotorSpeed('L', 60);
+			setMotorSpeed('R', 60 - 10);
+		} else {
+			// 같으면 유지
+			setMotorSpeed('L', 60);
+			setMotorSpeed('R', 60);
+		}
+
+		if (distance_cm >= target_distance_cm) {
+			setMotorSpeed('L', 0);
+			setMotorSpeed('R', 0);
+			break;
+		}
+//		setMotorMode(FORWARD);
+//		setMotorMode(ROTATE_RIGHT);
+//		HAL_Delay(3000);
+//		setMotorMode(ROTATE_LEFT);
+//		HAL_Delay(3000);
+//		setMotorMode(STOP);
+//		HAL_Delay(3000);
+	}
   /* USER CODE END 3 */
 }
 
@@ -249,6 +314,9 @@ static void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
   /* USER CODE BEGIN TIM2_Init 1 */
+	/*
+	 * Polarity가 Rising => 1체배 하지만 채널 두개를 사용 하므로 2체배
+	 */
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
@@ -328,6 +396,69 @@ static void MX_TIM3_Init(void)
   /* USER CODE BEGIN TIM3_Init 2 */
 
   /* USER CODE END TIM3_Init 2 */
+
+}
+
+/**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 84 - 1;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 1000;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+  HAL_TIM_MspPostInit(&htim4);
 
 }
 
@@ -439,7 +570,86 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void setMotorMode(DriveMode mode) {
+	switch (mode) {
+	case 0:
+		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_RESET);
+		break;
+	case 1:
+		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_SET);
+		break;
+		// 으론쪽으로 회전 => Left Motor 전진 , Right Motor 후진
+	case 2:
+		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_SET);
+		break;
+		// 왼쪽으로 회전 => Left Motor 후진 , Right Motor 전진
+	case 3:
+		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_RESET);
+		break;
+	case 4:
+		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_RESET);
+		break;
+	}
+}
 
+void setMotorSpeed(char motor_position, int speed) {
+	if (motor_position == 'L') {
+		__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, speed * 10);
+	} else if (motor_position == 'R') {
+		__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, speed * 10);
+	}
+}
+
+void motorStart() {
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+}
+
+void motorShutdown() {
+	__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
+	__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, 0);
+}
+
+void startEncoder(TIM_HandleTypeDef *htim) {
+	HAL_TIM_Encoder_Start(htim, TIM_CHANNEL_ALL);
+}
+
+int16_t readEncoder(TIM_HandleTypeDef *htim) {
+	return (int16_t) __HAL_TIM_GET_COUNTER(htim);
+}
+
+/* MF = Multiplication Factor
+ * method = M or T
+ */
+int16_t calRPM(char method, int8_t MT, int16_t encoder_count, float time,
+		int8_t PPR, int8_t ratio) {
+	int16_t result;
+	float temp;
+	if (method == 'M') {
+		temp = (60 * encoder_count) / (time * ratio * PPR * MT);
+		result = (int) temp;
+	} else {
+		// T Method
+		temp = 60 / (time * PPR * MT);
+		result = (int) temp;
+	}
+	return result;
+}
 /* USER CODE END 4 */
 
 /**
@@ -449,11 +659,10 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1) {
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -468,8 +677,9 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* User can add his own implementation to report the file name and line
+     number, ex: printf("Wrong parameters value: file %s on line %d\r\n", file,
+     line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
