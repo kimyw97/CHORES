@@ -13,7 +13,6 @@
 *.su
 
 # STM32CubeIDE project metadata
-.settings/
 .cproject
 .project
 .metadata/
