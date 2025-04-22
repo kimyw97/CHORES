@@ -59,8 +59,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define CS_I2C_SPI_Pin GPIO_PIN_3
-#define CS_I2C_SPI_GPIO_Port GPIOE
 #define PC14_OSC32_IN_Pin GPIO_PIN_14
 #define PC14_OSC32_IN_GPIO_Port GPIOC
 #define PC15_OSC32_OUT_Pin GPIO_PIN_15
@@ -81,8 +79,6 @@ void Error_Handler(void);
 #define I2S3_WS_GPIO_Port GPIOA
 #define Left_Motor_Encoder_A_Pin GPIO_PIN_5
 #define Left_Motor_Encoder_A_GPIO_Port GPIOA
-#define BOOT1_Pin GPIO_PIN_2
-#define BOOT1_GPIO_Port GPIOB
 #define CLK_IN_Pin GPIO_PIN_10
 #define CLK_IN_GPIO_Port GPIOB
 #define Left_Motor_IN1_Pin GPIO_PIN_8
@@ -101,8 +97,6 @@ void Error_Handler(void);
 #define LD5_GPIO_Port GPIOD
 #define LD6_Pin GPIO_PIN_15
 #define LD6_GPIO_Port GPIOD
-#define Right_Motor_Encoder_B_Pin GPIO_PIN_6
-#define Right_Motor_Encoder_B_GPIO_Port GPIOC
 #define I2S3_MCK_Pin GPIO_PIN_7
 #define I2S3_MCK_GPIO_Port GPIOC
 #define VBUS_FS_Pin GPIO_PIN_9
@@ -127,6 +121,8 @@ void Error_Handler(void);
 #define OTG_FS_OverCurrent_GPIO_Port GPIOD
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
+#define Right_Motor_Encoder_B_Pin GPIO_PIN_4
+#define Right_Motor_Encoder_B_GPIO_Port GPIOB
 #define Right_Motor_Encoder_A_Pin GPIO_PIN_5
 #define Right_Motor_Encoder_A_GPIO_Port GPIOB
 #define Audio_SCL_Pin GPIO_PIN_6
