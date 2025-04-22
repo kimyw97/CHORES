@@ -30,8 +30,3 @@
 *.swo
 *.bak
 *.orig
-
-# ROS2 build artifacts
-build/
-install/
-log/
