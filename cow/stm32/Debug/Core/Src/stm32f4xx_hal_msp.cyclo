@@ -5,6 +5,6 @@
 ../Core/Src/stm32f4xx_hal_msp.c:217:6:HAL_I2S_MspDeInit	2
 ../Core/Src/stm32f4xx_hal_msp.c:250:6:HAL_TIM_Encoder_MspInit	3
 ../Core/Src/stm32f4xx_hal_msp.c:310:6:HAL_TIM_Base_MspInit	4
-../Core/Src/stm32f4xx_hal_msp.c:348:6:HAL_TIM_MspPostInit	3
-../Core/Src/stm32f4xx_hal_msp.c:402:6:HAL_TIM_Encoder_MspDeInit	3
-../Core/Src/stm32f4xx_hal_msp.c:449:6:HAL_TIM_Base_MspDeInit	4
+../Core/Src/stm32f4xx_hal_msp.c:351:6:HAL_TIM_MspPostInit	3
+../Core/Src/stm32f4xx_hal_msp.c:405:6:HAL_TIM_Encoder_MspDeInit	3
+../Core/Src/stm32f4xx_hal_msp.c:452:6:HAL_TIM_Base_MspDeInit	4

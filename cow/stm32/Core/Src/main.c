@@ -152,7 +152,7 @@ int main(void)
 
 		  HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
 		  HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
-		  for (uint8_t angle = 0; angle <= 180; angle += 10)
+		  for (uint8_t angle = 0; angle <= 180; angle += 30)
 		      {
 		        set_servo_angle(&htim9, TIM_CHANNEL_1, angle);
 		        set_servo_angle(&htim9, TIM_CHANNEL_2, 180 - angle);
@@ -541,7 +541,7 @@ static void MX_TIM9_Init(void)
   htim9.Instance = TIM9;
   htim9.Init.Prescaler = 0;
   htim9.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim9.Init.Period = 65535;
+  htim9.Init.Period = 20000 - 1;
   htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim9.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim9) != HAL_OK)
@@ -771,8 +771,8 @@ int16_t calRPM(char method, int8_t MT, int16_t encoder_count, float time,
 
 void set_servo_angle(TIM_HandleTypeDef *htim, uint32_t channel, uint8_t angle) {
     // angle: 0~180 → pulse width: 1000~2000 us
-    uint16_t pulse = 1000 + (angle * 1000) / 180;
-    __HAL_TIM_SET_COMPARE(htim, channel, pulse);
+	uint16_t pulse = 500 + ((uint32_t)angle * 2000) / 180;
+	    __HAL_TIM_SET_COMPARE(htim, channel, pulse);
 }
 /* USER CODE END 4 */
 
