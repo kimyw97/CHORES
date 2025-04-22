@@ -85,6 +85,8 @@ void Error_Handler(void);
 #define BOOT1_GPIO_Port GPIOB
 #define CLK_IN_Pin GPIO_PIN_10
 #define CLK_IN_GPIO_Port GPIOB
+#define External_Emegency_BTN_Pin GPIO_PIN_15
+#define External_Emegency_BTN_GPIO_Port GPIOB
 #define Left_Motor_IN1_Pin GPIO_PIN_8
 #define Left_Motor_IN1_GPIO_Port GPIOD
 #define Left_Motor_IN2_Pin GPIO_PIN_9
