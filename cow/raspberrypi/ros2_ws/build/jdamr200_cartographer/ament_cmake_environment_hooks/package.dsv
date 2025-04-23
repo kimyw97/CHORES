@@ -1,0 +1,4 @@
+source;share/jdamr200_cartographer/local_setup.bash
+source;share/jdamr200_cartographer/local_setup.dsv
+source;share/jdamr200_cartographer/local_setup.sh
+source;share/jdamr200_cartographer/local_setup.zsh

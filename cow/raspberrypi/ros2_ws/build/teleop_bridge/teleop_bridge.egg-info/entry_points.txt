@@ -1,0 +1,4 @@
+[console_scripts]
+teleop_to_serial = teleop_bridge.teleop_to_serial:main
+teleop_wasd_publisher = teleop_bridge.teleop_wasd_pub:main
+

@@ -1,0 +1,12 @@
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/uninstall.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/rplidar_ros_uninstall.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/rplidar_node.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/rplidar_composition.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/rplidar_client.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/test.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/edit_cache.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/rebuild_cache.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/list_install_components.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/install.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/install/local.dir
+/home/jdamr/vscode/CHORES/cow/raspberrypi/ros2_ws/build/rplidar_ros/CMakeFiles/install/strip.dir

@@ -1,0 +1,8 @@
+source;share/jdamr200_cartographer/hook/cmake_prefix_path.ps1
+source;share/jdamr200_cartographer/hook/cmake_prefix_path.dsv
+source;share/jdamr200_cartographer/hook/cmake_prefix_path.sh
+source;share/jdamr200_cartographer/local_setup.bash
+source;share/jdamr200_cartographer/local_setup.dsv
+source;share/jdamr200_cartographer/local_setup.ps1
+source;share/jdamr200_cartographer/local_setup.sh
+source;share/jdamr200_cartographer/local_setup.zsh

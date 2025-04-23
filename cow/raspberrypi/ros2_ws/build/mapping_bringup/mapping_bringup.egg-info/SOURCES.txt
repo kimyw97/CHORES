@@ -1,0 +1,12 @@
+package.xml
+setup.cfg
+setup.py
+mapping_bringup/__init__.py
+mapping_bringup.egg-info/PKG-INFO
+mapping_bringup.egg-info/SOURCES.txt
+mapping_bringup.egg-info/dependency_links.txt
+mapping_bringup.egg-info/entry_points.txt
+mapping_bringup.egg-info/requires.txt
+mapping_bringup.egg-info/top_level.txt
+mapping_bringup.egg-info/zip-safe
+resource/mapping_bringup
