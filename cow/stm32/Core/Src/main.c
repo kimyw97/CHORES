@@ -27,6 +27,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include "servo.h"
+#include "queue.h"
 
 /* USER CODE END Includes */
 
@@ -43,6 +44,7 @@ typedef enum {
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define EmergencyOccure (1 << 0)
+#define RX_BUFFER_SIZE 64
 
 /* USER CODE END PD */
 
@@ -59,6 +61,7 @@ TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart4;
+UART_HandleTypeDef huart5;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -97,6 +100,10 @@ osEventFlagsId_t EmergencyHandle;
 const osEventFlagsAttr_t Emergency_attributes = { .name = "Emergency" };
 /* USER CODE BEGIN PV */
 EventGroupHandle_t emegencyEventGroup;
+uint8_t rx_data;                   // 1바이트 수신용
+char rx_buffer[RX_BUFFER_SIZE];   // 전체 문자열 버퍼
+uint8_t rx_index = 0;             // 버퍼 인덱스
+QueueHandle_t uartQueue;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -107,6 +114,7 @@ static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_UART4_Init(void);
+static void MX_UART5_Init(void);
 void StartDefaultTask(void *argument);
 void vCommTask(void *argument);
 void vNavigationTask(void *argument);
@@ -116,6 +124,7 @@ void vLiftControlTask(void *argument);
 void vSystemMonitorTask(void *argument);
 void vEmergencyTask(void *argument);
 
+static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 // 외부 긴급 버튼이 눌렸는지 확인하는 함수
 bool is_emergency_btn_pressed();
@@ -168,6 +177,10 @@ int main(void) {
 	MX_TIM2_Init();
 	MX_TIM4_Init();
 	MX_UART4_Init();
+	MX_UART5_Init();
+
+	/* Initialize interrupts */
+	MX_NVIC_Init();
 	/* USER CODE BEGIN 2 */
 	emegencyEventGroup = xEventGroupCreate();
 	motorStart();
@@ -182,6 +195,7 @@ int main(void) {
 	int8_t PPR = 11;
 	int8_t GEAR_RATIO = 30;
 	float WHEEL_CIRCUMFERENCE_CM = 2 * 3.1415 * 3.5;
+	HAL_UART_Receive_IT(&huart5, &rx_data, 1);
 	/* USER CODE END 2 */
 
 	/* Init scheduler */
@@ -201,6 +215,7 @@ int main(void) {
 
 	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
+	uartQueue = xQueueCreate(64, sizeof(uint8_t));  // 길이 64 큐 생성
 	/* USER CODE END RTOS_QUEUES */
 
 	/* Create the thread(s) */
@@ -301,6 +316,16 @@ void SystemClock_Config(void) {
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
 		Error_Handler();
 	}
+}
+
+/**
+ * @brief NVIC Configuration.
+ * @retval None
+ */
+static void MX_NVIC_Init(void) {
+	/* UART5_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(UART5_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(UART5_IRQn);
 }
 
 /**
@@ -523,6 +548,37 @@ static void MX_UART4_Init(void) {
 }
 
 /**
+ * @brief UART5 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_UART5_Init(void) {
+
+	/* USER CODE BEGIN UART5_Init 0 */
+
+	/* USER CODE END UART5_Init 0 */
+
+	/* USER CODE BEGIN UART5_Init 1 */
+
+	/* USER CODE END UART5_Init 1 */
+	huart5.Instance = UART5;
+	huart5.Init.BaudRate = 115200;
+	huart5.Init.WordLength = UART_WORDLENGTH_8B;
+	huart5.Init.StopBits = UART_STOPBITS_1;
+	huart5.Init.Parity = UART_PARITY_NONE;
+	huart5.Init.Mode = UART_MODE_TX_RX;
+	huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart5.Init.OverSampling = UART_OVERSAMPLING_16;
+	if (HAL_UART_Init(&huart5) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN UART5_Init 2 */
+
+	/* USER CODE END UART5_Init 2 */
+
+}
+
+/**
  * @brief GPIO Initialization Function
  * @param None
  * @retval None
@@ -685,10 +741,14 @@ void setMotorMode(DriveMode mode) {
 }
 
 void setMotorSpeed(char motor_position, int speed) {
+	int pwm = abs(speed)*10;
+	if(pwm <= 30) {
+		pwm = 35;
+	}
 	if (motor_position == 'L') {
-		__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, speed * 10);
+		__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm);
 	} else if (motor_position == 'R') {
-		__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, speed * 10);
+		__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, pwm);
 	}
 }
 
@@ -731,6 +791,66 @@ int16_t calRPM(char method, int8_t MT, int16_t encoder_count, float time,
 bool is_emergency_btn_pressed() {
 	return HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15);
 }
+
+void parseCommand(char *cmd) {
+	int left_pwm = 0, right_pwm = 0;
+
+	char *l_ptr = strchr(cmd, 'L');
+	char *r_ptr = strchr(cmd, 'R');
+
+	if (l_ptr && r_ptr) {
+		left_pwm = atoi(l_ptr + 1);   // 'L' 다음부터 정수로 변환
+		right_pwm = atoi(r_ptr + 1);  // 'R' 다음부터 정수로 변환
+
+		// PWM 제한 범위 적용
+		if (left_pwm > 255)
+			left_pwm = 255;
+		if (left_pwm < -255)
+			left_pwm = -255;
+		if (right_pwm > 255)
+			right_pwm = 255;
+		if (right_pwm < -255)
+			right_pwm = -255;
+
+		if (left_pwm > 0 & right_pwm > 0) {
+			setMotorMode(FORWARD);
+
+		} else if (left_pwm < 0 & right_pwm < 0) {
+			setMotorMode(BACKWARD);
+
+		} else if (left_pwm > 0 & right_pwm < 0) {
+			setMotorMode(ROTATE_RIGHT);
+
+		} else if (left_pwm < 0 & right_pwm > 0) {
+			setMotorMode(ROTATE_LEFT);
+
+		} else {
+			setMotorMode(STOP);
+		}
+
+		setMotorSpeed('L',left_pwm);
+		setMotorSpeed('R', right_pwm);
+	}
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	if (huart->Instance == UART5) {
+		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+		// 큐에 수신 바이트 삽입
+		xQueueSendFromISR(uartQueue, &rx_data, &xHigherPriorityTaskWoken);
+
+		// 다시 수신 시작
+		HAL_UART_Receive_IT(&huart5, &rx_data, 1);
+
+		// 필요 시 context switch
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
+}
+void send_debug_uart(const char *msg) {
+	HAL_UART_Transmit(&huart5, (uint8_t*) msg, strlen(msg), HAL_MAX_DELAY);
+}
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -745,10 +865,26 @@ void StartDefaultTask(void *argument) {
 	MX_USB_HOST_Init();
 	/* USER CODE BEGIN 5 */
 	/* Infinite loop */
+	char buffer[RX_BUFFER_SIZE];
+	int index = 0;
+
+	uint8_t byte;
+	HAL_GPIO_TogglePin(GPIOD, LD3_Pin);
+	osDelay(500);
 	for (;;) {
-		HAL_GPIO_TogglePin(GPIOD, LD3_Pin);
-		osDelay(500);
-		osDelay(1);
+		if (xQueueReceive(uartQueue, &byte, 1) == pdTRUE) {
+			if (byte == '\n') {
+				buffer[index] = '\0';
+				parseCommand(buffer);  // 예: "L100R120"
+				index = 0;
+			} else {
+				if (index < RX_BUFFER_SIZE - 1) {
+					buffer[index++] = byte;
+				} else {
+					index = 0; // overflow 방지
+				}
+			}
+		}
 	}
 	/* USER CODE END 5 */
 }
@@ -765,6 +901,8 @@ void vCommTask(void *argument) {
 	/* USER CODE BEGIN vCommTask */
 	/* Infinite loop */
 	for (;;) {
+		send_debug_uart("HELLO FROM STM32\n");
+		osDelay(1000);
 		osDelay(1);
 	}
 	/* USER CODE END vCommTask */
@@ -782,13 +920,13 @@ void vNavigationTask(void *argument) {
 	/* USER CODE BEGIN vNavigationTask */
 	/* Infinite loop */
 	for (;;) {
-		HAL_GPIO_TogglePin(GPIOD, LD4_Pin);
-		osDelay(500);
-		setMotorSpeed('L', 50);
-		setMotorSpeed('R', 50);
+//		HAL_GPIO_TogglePin(GPIOD, LD4_Pin);
+//		osDelay(500);
+//		setMotorSpeed('L', 50);
+//		setMotorSpeed('R', 50);
 		EventBits_t bits = xEventGroupWaitBits(emegencyEventGroup,
-				EmergencyOccure,
-				pdTRUE,  // clear on exit
+		EmergencyOccure,
+		pdTRUE,  // clear on exit
 				pdFALSE, // wait for ANY
 				0);
 
