@@ -10,17 +10,17 @@ C_SRCS += \
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ioreq.c \
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_pipes.c 
 
-OBJS += \
-./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.o \
-./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ctlreq.o \
-./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ioreq.o \
-./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_pipes.o 
-
 C_DEPS += \
 ./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.d \
 ./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ctlreq.d \
 ./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ioreq.d \
 ./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_pipes.d 
+
+OBJS += \
+./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.o \
+./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ctlreq.o \
+./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ioreq.o \
+./Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_pipes.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes

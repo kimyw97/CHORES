@@ -1,31 +1,36 @@
-../Core/Src/main.c:151:5:main	1
-../Core/Src/main.c:283:6:SystemClock_Config	3
-../Core/Src/main.c:325:13:MX_NVIC_Init	1
-../Core/Src/main.c:336:13:MX_I2C1_Init	2
-../Core/Src/main.c:368:13:MX_TIM2_Init	3
-../Core/Src/main.c:418:13:MX_TIM3_Init	3
-../Core/Src/main.c:465:13:MX_TIM4_Init	7
-../Core/Src/main.c:524:13:MX_UART4_Init	2
-../Core/Src/main.c:555:13:MX_UART5_Init	2
-../Core/Src/main.c:586:13:MX_GPIO_Init	1
-../Core/Src/main.c:706:6:setMotorMode	6
-../Core/Src/main.c:743:6:setMotorSpeed	4
-../Core/Src/main.c:755:6:motorStart	1
-../Core/Src/main.c:760:6:motorShutdown	1
-../Core/Src/main.c:765:6:startEncoder	1
-../Core/Src/main.c:769:9:readEncoder	1
-../Core/Src/main.c:776:9:calRPM	2
-../Core/Src/main.c:791:6:is_emergency_btn_pressed	1
-../Core/Src/main.c:795:6:parseCommand	11
-../Core/Src/main.c:836:6:HAL_UART_RxCpltCallback	3
-../Core/Src/main.c:850:6:send_debug_uart	1
-../Core/Src/main.c:863:6:StartDefaultTask	4
-../Core/Src/main.c:900:6:vCommTask	1
-../Core/Src/main.c:919:6:vNavigationTask	2
-../Core/Src/main.c:948:6:vIntakeTask	1
-../Core/Src/main.c:966:6:vTrashBinMonitorTask	1
-../Core/Src/main.c:983:6:vLiftControlTask	1
-../Core/Src/main.c:1000:6:vSystemMonitorTask	1
-../Core/Src/main.c:1017:6:vEmergencyTask	2
-../Core/Src/main.c:1037:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Src/main.c:1053:6:Error_Handler	1
+/Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.macos64_1.1.0.202410301201/tools/arm-none-eabi/include/c++/12.3.1/cstring:106:3:char* std::strchr(char*, int)	1
+/Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.macos64_1.1.0.202410301201/tools/arm-none-eabi/include/c++/12.3.1/arm-none-eabi/thumb/v7e-m+fp/hard/bits/gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	1
+../Core/Src/main.cpp:166:5:int main()	1
+../Core/Src/main.cpp:309:6:void SystemClock_Config()	3
+../Core/Src/main.cpp:351:13:void MX_NVIC_Init()	1
+../Core/Src/main.cpp:362:13:void MX_I2C1_Init()	2
+../Core/Src/main.cpp:394:13:void MX_TIM2_Init()	3
+../Core/Src/main.cpp:444:13:void MX_TIM3_Init()	3
+../Core/Src/main.cpp:491:13:void MX_TIM4_Init()	7
+../Core/Src/main.cpp:550:13:void MX_UART4_Init()	2
+../Core/Src/main.cpp:581:13:void MX_UART5_Init()	2
+../Core/Src/main.cpp:612:13:void MX_USART2_UART_Init()	2
+../Core/Src/main.cpp:643:13:void MX_GPIO_Init()	1
+../Core/Src/main.cpp:744:6:void setMotorMode(DriveMode)	6
+../Core/Src/main.cpp:781:6:void setMotorSpeed(char, int)	4
+../Core/Src/main.cpp:793:6:void motorStart()	1
+../Core/Src/main.cpp:798:6:void motorShutdown()	1
+../Core/Src/main.cpp:803:6:void startEncoder(TIM_HandleTypeDef*)	1
+../Core/Src/main.cpp:807:9:int16_t readEncoder(TIM_HandleTypeDef*)	1
+../Core/Src/main.cpp:814:9:int16_t calRPM(char, int8_t, int16_t, float, int8_t, int8_t)	2
+../Core/Src/main.cpp:829:6:bool is_emergency_btn_pressed()	1
+../Core/Src/main.cpp:833:6:void parseCommand(char*)	11
+../Core/Src/main.cpp:877:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	7
+../Core/Src/main.cpp:924:6:void StartDefaultTask(void*)	1
+../Core/Src/main.cpp:943:6:void vCommTask(void*)	1
+../Core/Src/main.cpp:960:6:void vNavigationTask(void*)	3
+../Core/Src/main.cpp:992:6:void vIntakeTask(void*)	3
+../Core/Src/main.cpp:1027:6:void vTrashBinMonitorTask(void*)	1
+../Core/Src/main.cpp:1044:6:void vLiftControlTask(void*)	1
+../Core/Src/main.cpp:1061:6:void vSystemMonitorTask(void*)	1
+../Core/Src/main.cpp:1078:6:void vEmergencyTask(void*)	2
+../Core/Src/main.cpp:1098:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	2
+../Core/Src/main.cpp:1114:6:void Error_Handler()	1
+../Core/Src/main.cpp:1121:1:void __static_initialization_and_destruction_0(int, int)	5
+../Core/Src/main.cpp:1121:1:cpp)	1
+../Core/Src/main.cpp:1121:1:cpp)	1

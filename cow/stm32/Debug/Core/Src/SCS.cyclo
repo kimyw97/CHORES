@@ -1,0 +1,22 @@
+../Core/Src/SCS.cpp:9:1:SCS::SCS()	1
+../Core/Src/SCS.cpp:15:1:SCS::SCS(u8)	1
+../Core/Src/SCS.cpp:22:1:SCS::SCS(u8, u8)	1
+../Core/Src/SCS.cpp:31:6:void SCS::Host2SCS(u8*, u8*, u16)	2
+../Core/Src/SCS.cpp:44:5:u16 SCS::SCS2Host(u8, u8)	2
+../Core/Src/SCS.cpp:59:6:void SCS::writeBuf(u8, u8, u8*, u8, u8)	4
+../Core/Src/SCS.cpp:91:5:int SCS::genWrite(u8, u8, u8*, u8)	1
+../Core/Src/SCS.cpp:101:5:int SCS::regWrite(u8, u8, u8*, u8)	1
+../Core/Src/SCS.cpp:111:5:int SCS::RegWriteAction(u8)	1
+../Core/Src/SCS.cpp:121:6:void SCS::syncWrite(u8*, u8, u8, u8*, u8)	3
+../Core/Src/SCS.cpp:150:5:int SCS::writeByte(u8, u8, u8)	1
+../Core/Src/SCS.cpp:158:5:int SCS::writeWord(u8, u8, u16)	1
+../Core/Src/SCS.cpp:170:5:int SCS::Read(u8, u8, u8*, u8)	7
+../Core/Src/SCS.cpp:204:5:int SCS::readByte(u8, u8)	2
+../Core/Src/SCS.cpp:216:5:int SCS::readWord(u8, u8)	2
+../Core/Src/SCS.cpp:229:5:int SCS::Ping(u8)	7
+../Core/Src/SCS.cpp:256:5:int SCS::checkHead()	5
+../Core/Src/SCS.cpp:278:5:int SCS::Ack(u8)	8
+../Core/Src/SCS.cpp:304:5:int SCS::syncReadPacketTx(u8*, u8, u8, u8)	2
+../Core/Src/SCS.cpp:325:5:int SCS::syncReadPacketRx(u8, u8*)	6
+../Core/Src/SCS.cpp:349:5:int SCS::syncReadRxPacketToByte()	2
+../Core/Src/SCS.cpp:357:5:int SCS::syncReadRxPacketToWrod(u8)	4
