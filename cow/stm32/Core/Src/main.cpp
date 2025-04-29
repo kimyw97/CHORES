@@ -116,6 +116,7 @@ char rx_cmd_buffer[CMD_BUFFER_SIZE];  // 전체 문자열 버퍼
 uint8_t rx_index = 0;             // 버퍼 인덱스
 QueueHandle_t MotorSpeedQueue;
 QueueHandle_t ServoQueue;
+QueueHandle_t StepperQueue;
 SCSCL servo;
 /* USER CODE END PV */
 
@@ -239,8 +240,9 @@ int main(void) {
 
 	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-	MotorSpeedQueue = xQueueCreate(64, sizeof(CommandMessage));  // 길이 64 큐 생성
+	MotorSpeedQueue = xQueueCreate(64, sizeof(CommandMessage));
 	ServoQueue = xQueueCreate(64, sizeof(CommandMessage));
+	StepperQueue = xQueueCreate(64, sizeof(CommandMessage));
 	/* USER CODE END RTOS_QUEUES */
 
 	/* Create the thread(s) */
@@ -893,7 +895,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 				xQueueSendFromISR(ServoQueue, &msg, &xHigherPriorityTaskWoken);
 			} else if (strncmp(msg.cmd, "U", 1) == 0
 					| strncmp(msg.cmd, "D", 1) == 0) {
-				// TODO 아두이노로 UART 전송
+				xQueueSendFromISR(StepprQueue, &msg, &xHigherPriorityTaskWoken);
 			}
 			rx_index = 0;  // 버퍼 초기화
 		} else {
@@ -1045,7 +1047,19 @@ void vLiftControlTask(void *argument) {
 	/* USER CODE BEGIN vLiftControlTask */
 	/* Infinite loop */
 	for (;;) {
-		osDelay(1);
+		if (xQueueReceive(StepperQueue, &msg, 1) == pdTRUE) {
+			char *u_ptr = strchr(msg.cmd, 'U');
+			char *d_ptr = strchr(msg.cmd, 'D');
+			if (u_ptr) {
+				HAL_UART_Transmit(&huart2, (uint8_t*) msg.cmd, strlen(msg.cmd),
+						HAL_MAX_DELAY);
+				HAL_UART_Transmit(&huart2, (uint8_t*) "\n", 1, HAL_MAX_DELAY);
+			} else if (d_ptr) {
+				HAL_UART_Transmit(&huart2, (uint8_t*) msg.cmd, strlen(msg.cmd),
+						HAL_MAX_DELAY);
+				HAL_UART_Transmit(&huart2, (uint8_t*) "\n", 1, HAL_MAX_DELAY); // 줄바꿈
+			}
+		}
 	}
 	/* USER CODE END vLiftControlTask */
 }
