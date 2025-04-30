@@ -7,11 +7,11 @@
 C_SRCS += \
 ../USB_HOST/App/usb_host.c 
 
-OBJS += \
-./USB_HOST/App/usb_host.o 
-
 C_DEPS += \
 ./USB_HOST/App/usb_host.d 
+
+OBJS += \
+./USB_HOST/App/usb_host.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes

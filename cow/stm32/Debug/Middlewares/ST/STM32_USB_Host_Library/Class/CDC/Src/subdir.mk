@@ -7,11 +7,11 @@
 C_SRCS += \
 ../Middlewares/ST/STM32_USB_Host_Library/Class/CDC/Src/usbh_cdc.c 
 
-OBJS += \
-./Middlewares/ST/STM32_USB_Host_Library/Class/CDC/Src/usbh_cdc.o 
-
 C_DEPS += \
 ./Middlewares/ST/STM32_USB_Host_Library/Class/CDC/Src/usbh_cdc.d 
+
+OBJS += \
+./Middlewares/ST/STM32_USB_Host_Library/Class/CDC/Src/usbh_cdc.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
