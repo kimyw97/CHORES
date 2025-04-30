@@ -9,7 +9,13 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+set(OpenCV_DIR "/usr/local/lib/cmake/opencv4")
+find_package(OpenCV REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
+add_executable(stereo_litter_node src/stereo_litter_direct_node.cpp)
+ament_target_dependencies(stereo_litter_node rclcpp std_msgs OpenCV)
+ament_target_dependencies(stereo_litter_node ament_index_cpp)
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
@@ -22,4 +28,10 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+install(DIRECTORY models/
+  DESTINATION share/${PROJECT_NAME}/models
+)
+install(TARGETS stereo_litter_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 ament_package()
