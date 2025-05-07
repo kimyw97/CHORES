@@ -19,3 +19,5 @@
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.c:1264:9:USBH_IsPortEnabled	1
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.c:1276:20:USBH_LL_Connect	1
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.c:1302:20:USBH_LL_Disconnect	1
+../Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.c:1350:13:USBH_Process_OS	2
+../Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.c:1373:20:USBH_LL_NotifyURBChange	1
