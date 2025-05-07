@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
- ******************************************************************************
- * @file           : main.c
- * @brief          : Main program body
- ******************************************************************************
- * @attention
- *
- * Copyright (c) 2025 STMicroelectronics.
- * All rights reserved.
- *
- * This software is licensed under terms that can be found in the LICENSE file
- * in the root directory of this software component.
- * If no LICENSE file comes with this software, it is provided AS-IS.
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2025 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it s provided AS-IS.
+  *
+  ******************************************************************************
+  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -23,22 +23,30 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+#include "queue.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef enum {
-	FORWARD, BACKWARD, ROTATE_RIGHT, // 오른방향 제자리 회전
-	ROTATE_LEFT,  // 왼 방향 제자리 회전
-	STOP
-} DriveMode;
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define PULSES_PER_REV 1320
+#define WHEEL_RADIUS    0.03f
+#define WHEEL_BASE      0.15f
+#define PI              3.1416f
 
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
+extern UART_HandleTypeDef huart2;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,9 +59,10 @@ I2C_HandleTypeDef hi2c1;
 
 I2S_HandleTypeDef hi2s3;
 
-TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
+
+UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -64,6 +73,26 @@ const osThreadAttr_t defaultTask_attributes = {
 };
 /* USER CODE BEGIN PV */
 
+/* === FreeRTOS 객체 === */
+QueueHandle_t MotorSpeedQueue;
+QueueHandle_t ArmCommandQueue;
+
+/* === UART 수신 버퍼 === */
+uint8_t uart_rx_byte;
+
+/* === 모터 제어 === */
+float current_speed_left = 0.0f;
+float current_speed_right = 0.0f;
+
+/* === 센서 상태 === */
+bool cliff_detected = false;
+
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -71,20 +100,18 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2S3_Init(void);
-static void MX_TIM3_Init(void);
-static void MX_TIM2_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_USART2_UART_Init(void);
+static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-void setMotorMode(DriveMode mode);
-void setMotorSpeed(char motor_position, int speed);
-void motorStart();
-void motorShutdown();
-void startEncoder(TIM_HandleTypeDef *htim);
-int16_t readEncoder(TIM_HandleTypeDef *htim);
-int16_t calRPM(char method, int8_t MT, int16_t encoder_count, float time,
-		int8_t PPR, int8_t ratio);
+bool is_cliff_detected();
+void MotorControlTask(void *argument);
+void FeedbackTask(void *argument);
+void parse_motor_command_LR(const char *str);
+void set_motor_pwm(float left, float right);
+void RobotArmControlTask(void *argument);
 
 /* USER CODE END PFP */
 
@@ -124,24 +151,21 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_I2S3_Init();
-  MX_TIM3_Init();
-  MX_TIM2_Init();
   MX_TIM4_Init();
+  MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-	motorStart();
-	motorShutdown();
-	setMotorSpeed('L', 50);
-	setMotorSpeed('R', 50);
-	setMotorMode(ROTATE_LEFT);
-	HAL_Delay(3000);
-	startEncoder(&htim3);
-	startEncoder(&htim2);
-	__HAL_TIM_SET_COUNTER(&htim3, 0);
-	__HAL_TIM_SET_COUNTER(&htim2, 0);
-	int8_t target_distance_cm = 100;
-	int8_t PPR = 11;
-	int8_t GEAR_RATIO = 30;
-	float WHEEL_CIRCUMFERENCE_CM = 2 * 3.1415 * 3.5;
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+  HAL_UART_Receive_IT(&huart2, &uart_rx_byte, 1);  // UART 수신 인터럽트 시작
+  MotorSpeedQueue = xQueueCreate(10, sizeof(char[64]));
+  ArmCommandQueue = xQueueCreate(10, sizeof(char[64]));
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -161,6 +185,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -169,6 +194,15 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+
+  /* creation of MotorControlTask */
+  MotorControlTaskHandle = osThreadNew(MotorControlTask, NULL, &MotorControlTask_attributes);
+
+  /* creation of FeedbackTask */
+  FeedbackTaskHandle = osThreadNew(FeedbackTask, NULL, &FeedbackTask_attributes);
+
+  /* creation of RobotArmTaskHandle */
+  RobotArmTaskHandle = osThreadNew(RobotArmControlTask, NULL, &RobotArmTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -182,26 +216,12 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	while (1) {
+  while (1)
+  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		//FORWARD, BACKWARD, ROTATE_RIGHT, // 오른방향 제자리 회전
-//	ROTATE_LEFT,  // 왼 방향 제자리 회전
-//	STOP
-		setMotorMode(FORWARD);
-		HAL_Delay(1000);
-		int32_t left_pulse = readEncoder(&htim2);
-		int32_t right_pulse = readEncoder(&htim3) * -1;
-		setMotorMode(BACKWARD);
-		HAL_Delay(1000);
-		setMotorMode(ROTATE_RIGHT);
-		HAL_Delay(1000);
-		setMotorMode(ROTATE_LEFT);
-		HAL_Delay(1000);
-		setMotorMode(STOP);
-		HAL_Delay(1000);
-	}
+  }
   /* USER CODE END 3 */
 }
 
@@ -319,107 +339,6 @@ static void MX_I2S3_Init(void)
 }
 
 /**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM2_Init(void)
-{
-
-  /* USER CODE BEGIN TIM2_Init 0 */
-
-  /* USER CODE END TIM2_Init 0 */
-
-  TIM_Encoder_InitTypeDef sConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM2_Init 1 */
-	/*
-	 * Polarity가 Rising => 1체배 하지만 채널 두개를 사용 하므로 2체배
-	 */
-
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 65535;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
-  sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
-  sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC1Filter = 0;
-  sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
-  sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC2Filter = 0;
-  if (HAL_TIM_Encoder_Init(&htim2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM2_Init 2 */
-
-  /* USER CODE END TIM2_Init 2 */
-
-}
-
-/**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_Encoder_InitTypeDef sConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 65535;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
-  sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
-  sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC1Filter = 0;
-  sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
-  sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC2Filter = 0;
-  if (HAL_TIM_Encoder_Init(&htim3, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-
-}
-
-/**
   * @brief TIM4 Initialization Function
   * @param None
   * @retval None
@@ -483,6 +402,72 @@ static void MX_TIM4_Init(void)
 }
 
 /**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -508,9 +493,11 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(OTG_FS_PowerSwitchOn_GPIO_Port, OTG_FS_PowerSwitchOn_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin|Left_Motor_IN2_Pin|Right_Motor_IN1_Pin|Right_Motor_IN2_Pin
-                          |LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin
-                          |Audio_RST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin|Right_Motor_IN2_Pin|LD4_Pin|LD3_Pin
+                          |LD5_Pin|LD6_Pin|Audio_RST_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, Left_Motor_IN1_Pin|Left_Motor_IN2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : CS_I2C_SPI_Pin */
   GPIO_InitStruct.Pin = CS_I2C_SPI_Pin;
@@ -519,12 +506,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(CS_I2C_SPI_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : OTG_FS_PowerSwitchOn_Pin */
-  GPIO_InitStruct.Pin = OTG_FS_PowerSwitchOn_Pin;
+  /*Configure GPIO pins : OTG_FS_PowerSwitchOn_Pin Left_Motor_IN1_Pin Left_Motor_IN2_Pin */
+  GPIO_InitStruct.Pin = OTG_FS_PowerSwitchOn_Pin|Left_Motor_IN1_Pin|Left_Motor_IN2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(OTG_FS_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : front_infrared1_Pin front_infrared2_Pin */
+  GPIO_InitStruct.Pin = front_infrared1_Pin|front_infrared2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PDM_OUT_Pin */
   GPIO_InitStruct.Pin = PDM_OUT_Pin;
@@ -562,12 +555,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
   HAL_GPIO_Init(CLK_IN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Left_Motor_IN1_Pin Left_Motor_IN2_Pin Right_Motor_IN1_Pin Right_Motor_IN2_Pin
-                           LD4_Pin LD3_Pin LD5_Pin LD6_Pin
-                           Audio_RST_Pin */
-  GPIO_InitStruct.Pin = Left_Motor_IN1_Pin|Left_Motor_IN2_Pin|Right_Motor_IN1_Pin|Right_Motor_IN2_Pin
-                          |LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin
-                          |Audio_RST_Pin;
+  /*Configure GPIO pins : Right_Motor_IN1_Pin Right_Motor_IN2_Pin LD4_Pin LD3_Pin
+                           LD5_Pin LD6_Pin Audio_RST_Pin */
+  GPIO_InitStruct.Pin = Right_Motor_IN1_Pin|Right_Motor_IN2_Pin|LD4_Pin|LD3_Pin
+                          |LD5_Pin|LD6_Pin|Audio_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -590,86 +581,199 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void setMotorMode(DriveMode mode) {
-	switch (mode) {
-	case 0:
-		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_RESET);
-		break;
-	case 1:
-		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_SET);
-		break;
-		// 으론쪽으로 회전 => Left Motor 전진 , Right Motor 후진
-	case 2:
-		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_SET);
-		break;
-		// 왼쪽으로 회전 => Left Motor 후진 , Right Motor 전진
-	case 3:
-		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_RESET);
-		break;
-	case 4:
-		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_RESET);
-		break;
-	}
+// UART 인터럽트 수신 처리를 위해 추가
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART2)
+    {
+        static char rx_buf[64];
+        static uint8_t rx_index = 0;
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+        if (uart_rx_byte == '\n' || uart_rx_byte == '\r')
+        {
+            rx_buf[rx_index] = '\0';  // 문자열 종료
+            if (strncmp(rx_buf, "L", 1) == 0 || strncmp(rx_buf, "R", 1) == 0) {
+                xQueueSendFromISR(MotorSpeedQueue, &rx_buf, &xHigherPriorityTaskWoken);
+            } else if (strncmp(rx_buf, "J", 1) == 0) {
+                xQueueSendFromISR(ArmCommandQueue, &rx_buf, &xHigherPriorityTaskWoken);
+            }
+            rx_index = 0;
+        }
+        else if (rx_index < sizeof(rx_buf) - 1)
+        {
+            rx_buf[rx_index++] = uart_rx_byte;
+        }
+
+        HAL_UART_Receive_IT(&huart2, &uart_rx_byte, 1);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
 }
 
-void setMotorSpeed(char motor_position, int speed) {
-	if (motor_position == 'L') {
-		__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, speed * 10);
-	} else if (motor_position == 'R') {
-		__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, speed * 10);
-	}
+
+
+
+// === 모터 제어 Task ===
+void MotorControlTask(void *argument)
+{
+    char motor_cmd[64];
+    for (;;)
+    {
+        if (xQueueReceive(MotorSpeedQueue, &motor_cmd, portMAX_DELAY) == pdPASS)
+        {
+            parse_motor_command_LR(motor_cmd);
+        }
+    }
 }
 
-void motorStart() {
-	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
-	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+
+
+// === 피드백 송신 Task (센서 상태 송신) ===
+void FeedbackTask(void *argument)
+{
+    for (;;)
+    {
+        uint8_t s1 = HAL_GPIO_ReadPin(GPIOC, front_infrared1_Pin);
+        uint8_t s2 = HAL_GPIO_ReadPin(GPIOC, front_infrared2_Pin);
+
+        char msg[32];
+        sprintf(msg, "s1%ds2%d\n", s1, s2);
+        HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+        vTaskDelay(pdMS_TO_TICKS(500));  // 500ms마다 송신
+    }
 }
 
-void motorShutdown() {
-	__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, 0);
-	__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, 0);
+// === 기본 DefaultTask (필요없으면 그냥 놔둬도 됨) ===
+void StartDefaultTask(void *argument)
+{
+    /* init code for USB_HOST */
+    MX_USB_HOST_Init();
+
+    for (;;)
+    {
+        osDelay(1);
+    }
 }
 
-void startEncoder(TIM_HandleTypeDef *htim) {
-	HAL_TIM_Encoder_Start(htim, TIM_CHANNEL_ALL);
+// === 보조 함수 ===
+
+// 모터 속도 설정
+void set_motor_pwm(float left, float right)
+{
+    bool left_dir = (left > 0);
+    bool right_dir = (right > 0);
+    uint16_t pwm_L = (uint16_t)(fminf(fabs(left) * 10.0f, 1000));
+    uint16_t pwm_R = (uint16_t)(fminf(fabs(right) * 10.0f, 1000));
+
+    if (left == 0) {
+        HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, GPIO_PIN_RESET);
+    } else {
+        HAL_GPIO_WritePin(GPIOD, Left_Motor_IN1_Pin, left_dir ? GPIO_PIN_SET : GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOD, Left_Motor_IN2_Pin, left_dir ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    }
+
+    if (right == 0) {
+        HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, GPIO_PIN_RESET);
+    } else {
+        HAL_GPIO_WritePin(GPIOD, Right_Motor_IN1_Pin, right_dir ? GPIO_PIN_SET : GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOD, Right_Motor_IN2_Pin, right_dir ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    }
+
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm_L);
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, pwm_R);
 }
 
-int16_t readEncoder(TIM_HandleTypeDef *htim) {
-	return (int16_t) __HAL_TIM_GET_COUNTER(htim);
+// 낭떠러지 감지
+bool is_cliff_detected()
+{
+    uint8_t s1 = HAL_GPIO_ReadPin(GPIOC, front_infrared1_Pin);
+    uint8_t s2 = HAL_GPIO_ReadPin(GPIOC, front_infrared2_Pin);
+    return (s1 == GPIO_PIN_RESET || s2 == GPIO_PIN_RESET);
 }
 
-/* MF = Multiplication Factor
- * method = M or T
- */
-int16_t calRPM(char method, int8_t MT, int16_t encoder_count, float time,
-		int8_t PPR, int8_t ratio) {
-	int16_t result;
-	float temp;
-	if (method == 'M') {
-		temp = (60 * encoder_count) / (time * ratio * PPR * MT);
-		result = (int) temp;
-	} else {
-		// T Method
-		temp = 60 / (time * PPR * MT);
-		result = (int) temp;
-	}
-	return result;
+// 명령 파싱 (ex. "L50R30")
+void parse_motor_command_LR(const char* str)
+{
+    int left = 0, right = 0;
+    char* l_ptr = strstr(str, "L");
+    char* r_ptr = strstr(str, "R");
+
+    if (l_ptr != NULL) left = atoi(l_ptr + 1);
+    if (r_ptr != NULL) right = atoi(r_ptr + 1);
+
+    set_motor_pwm((float)left, (float)right);
 }
+
+// 관절 제어용 PWM 맵핑 함수
+void set_servo_angle(uint8_t joint, float angle_deg)
+{
+    uint16_t pulse;
+
+    // STS3215 서보: J1, J2, J3, J5
+    if (joint == 1 || joint == 2 || joint == 3 || joint == 5)
+    {
+        // 범위: 0°~180° → 500us~2500us
+        pulse = (uint16_t)(500 + (angle_deg / 180.0f) * 2000);
+    }
+    // 3032 서보: J4, J6
+    else if (joint == 4 || joint == 6)
+    {
+        // 범위: 0°~180° → 1000us~2000us
+        pulse = (uint16_t)(1000 + (angle_deg / 180.0f) * 1000);
+    }
+    else
+    {
+        return;  // 유효하지 않은 관절 번호
+    }
+
+    // PWM 채널에 따라 출력
+    switch (joint)
+    {
+    case 1:
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pulse);
+        break;
+    case 2:
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pulse);
+        break;
+    case 3:
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, pulse);
+        break;
+    case 4:
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pulse);
+        break;
+    case 5:
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pulse);
+        break;
+    case 6:
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pulse);
+        break;
+    }
+}
+
+// UART 입력 → 관절 제어 파싱 Task
+void RobotArmControlTask(void *argument)
+{
+    char arm_cmd[64];
+    for (;;)
+    {
+        if (xQueueReceive(ArmCommandQueue, &arm_cmd, portMAX_DELAY) == pdPASS)
+        {
+            float j[6] = {0};
+            if (sscanf(arm_cmd, "J1%fJ2%fJ3%fJ4%fJ5%fJ6%f", &j[0], &j[1], &j[2], &j[3], &j[4], &j[5]) == 6)
+            {
+                for (int i = 0; i < 6; ++i)
+                {
+                    set_servo_angle(i + 1, j[i]);
+                }
+            }
+        }
+    }
+}
+
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -720,10 +824,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
-	__disable_irq();
-	while (1) {
-	}
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -738,9 +843,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line
-     number, ex: printf("Wrong parameters value: file %s on line %d\r\n", file,
-     line) */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
