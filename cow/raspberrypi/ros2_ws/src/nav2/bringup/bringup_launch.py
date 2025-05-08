@@ -6,7 +6,7 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     nav2_dir = get_package_share_directory('nav2')
     param_file = os.path.join(nav2_dir, 'bringup', 'nav2_params.yaml')
-    map_file = os.path.join(nav2_dir, 'map', 'map.yaml')
+    map_file = os.path.join(nav2_dir, 'map', 'test_map.yaml')
 
     return LaunchDescription([
         Node(
@@ -44,20 +44,8 @@ def generate_launch_description():
             output='screen',
             parameters=[param_file]
         ),
-        Node(
-            package='nav2_recoveries',
-            executable='recoveries_server',
-            name='recoveries_server',
-            output='screen',
-            parameters=[param_file]
-        ),
-        Node(
-            package='nav2_bt_navigator',
-            executable='behavior_server',
-            name='behavior_server',
-            output='screen',
-            parameters=[param_file]
-        ),
+        
+        
         Node(
             package='nav2_lifecycle_manager',
             executable='lifecycle_manager',
@@ -72,15 +60,9 @@ def generate_launch_description():
                     'bt_navigator',
                     'controller_server',
                     'planner_server',
-                    'recoveries_server',
-                    'behavior_server'
+                    
                 ]
             }]
         ),
-        Node(
-            package='cmdvel_to_pwm',
-            executable='cmdvel_to_pwm',
-            name='cmdvel_to_pwm_node',
-            output='screen'
-        )
+        
     ])
