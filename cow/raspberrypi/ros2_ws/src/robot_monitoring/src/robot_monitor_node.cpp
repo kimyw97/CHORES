@@ -57,6 +57,7 @@ private:
   }
 
   std::ifstream serial_;
+  std::string buffer_;
   rclcpp::Publisher<robot_monitoring::msg::RobotStatus>::SharedPtr status_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 };
