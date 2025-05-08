@@ -45,3 +45,10 @@ private:
   rclcpp::Publisher<robot_monitoring::msg::RobotStatus>::SharedPtr status_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 };
+
+int main(int argc, char **argv) {
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<RobotMonitorNode>());
+  rclcpp::shutdown();
+  return 0;
+}
