@@ -4,6 +4,8 @@
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2/LinearMath/Quaternion.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+
 
 class OdomFromStatusNode : public rclcpp::Node {
 public:
@@ -36,6 +38,31 @@ private:
       last_right_ticks_ = right_ticks;
       last_time_ = current_time;
       first_reading_ = false;
+
+      tf2::Quaternion q;
+      q.setRPY(0, 0, 0);
+      q.normalize();
+
+      // 초기 Odometry 퍼블리시
+      nav_msgs::msg::Odometry odom;
+      odom.header.stamp = current_time;
+      odom.header.frame_id = "odom";
+      odom.child_frame_id = "base_footprint";
+      odom.pose.pose.position.x = 0.0;
+      odom.pose.pose.position.y = 0.0;
+      odom.pose.pose.orientation = tf2::toMsg(q);
+      odom_pub_->publish(odom);
+
+      // 초기 TF 퍼블리시
+      geometry_msgs::msg::TransformStamped tf;
+      tf.header.stamp = current_time;
+      tf.header.frame_id = "odom";
+      tf.child_frame_id = "base_footprint";
+      tf.transform.translation.x = 0.0;
+      tf.transform.translation.y = 0.0;
+      tf.transform.translation.z = 0.0;
+      tf.transform.rotation = tf2::toMsg(q);
+      tf_broadcaster_->sendTransform(tf);
       return;
     }
 
@@ -47,7 +74,6 @@ private:
     last_left_ticks_ = left_ticks;
     last_right_ticks_ = right_ticks;
 
-    // 로봇 파라미터
     const double TICKS_PER_REV = 500.0;
     const double WHEEL_RADIUS = 0.033;
     const double WHEEL_BASE = 0.16;
@@ -67,37 +93,25 @@ private:
     q.setRPY(0, 0, th_);
     q.normalize();
 
-    // 퍼블리시: Odometry
     nav_msgs::msg::Odometry odom;
     odom.header.stamp = current_time;
     odom.header.frame_id = "odom";
-    odom.child_frame_id = "base_link";
-
+    odom.child_frame_id = "base_footprint";
     odom.pose.pose.position.x = x_;
     odom.pose.pose.position.y = y_;
-    odom.pose.pose.orientation.x = q.x();
-    odom.pose.pose.orientation.y = q.y();
-    odom.pose.pose.orientation.z = q.z();
-    odom.pose.pose.orientation.w = q.w();
-
+    odom.pose.pose.orientation = tf2::toMsg(q);
     odom.twist.twist.linear.x = d_center / dt;
     odom.twist.twist.angular.z = d_theta / dt;
-
     odom_pub_->publish(odom);
 
-    // 퍼블리시: TF
     geometry_msgs::msg::TransformStamped tf;
     tf.header.stamp = current_time;
     tf.header.frame_id = "odom";
-    tf.child_frame_id = "base_link";
+    tf.child_frame_id = "base_footprint";
     tf.transform.translation.x = x_;
     tf.transform.translation.y = y_;
     tf.transform.translation.z = 0.0;
-    tf.transform.rotation.x = q.x();
-    tf.transform.rotation.y = q.y();
-    tf.transform.rotation.z = q.z();
-    tf.transform.rotation.w = q.w();
-
+    tf.transform.rotation = tf2::toMsg(q);
     tf_broadcaster_->sendTransform(tf);
   }
 
