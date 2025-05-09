@@ -89,8 +89,8 @@ private:
         int r = static_cast<int>(right_speed * 100);
     
         // 최소 PWM 보정 (0은 그대로, 1~49는 ±50으로 클램핑)
-        if (std::abs(l) > 0 && std::abs(l) < 100) l = (l > 0) ? 100 : -100;
-        if (std::abs(r) > 0 && std::abs(r) < 100) r = (r > 0) ? 100 : -100;
+        if (std::abs(l) > 0 && std::abs(l) < 80) l = (l > 0) ? 80 : -80;
+        if (std::abs(r) > 0 && std::abs(r) < 80) r = (r > 0) ? 80 : -80;
     
         std::stringstream ss;
         ss << "L" << l << "R" << r << "\n";
