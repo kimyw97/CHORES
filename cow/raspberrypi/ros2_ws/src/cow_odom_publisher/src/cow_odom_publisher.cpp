@@ -74,9 +74,9 @@ private:
     last_left_ticks_ = left_ticks;
     last_right_ticks_ = right_ticks;
 
-    const double TICKS_PER_REV = 500.0;
-    const double WHEEL_RADIUS = 0.033;
-    const double WHEEL_BASE = 0.16;
+    const double TICKS_PER_REV = 660.0;
+    const double WHEEL_RADIUS = 0.045;
+    const double WHEEL_BASE = 0.30;
 
     double dist_per_tick = 2 * M_PI * WHEEL_RADIUS / TICKS_PER_REV;
     double d_left = delta_left * dist_per_tick;
