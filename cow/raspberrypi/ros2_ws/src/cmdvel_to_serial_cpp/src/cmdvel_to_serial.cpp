@@ -19,16 +19,23 @@ public:
         this->get_parameter("baudrate", baudrate_);
         this->get_parameter("wheel_base", wheel_base_);
 
+        RCLCPP_INFO(this->get_logger(), "Serial port: %s", port_.c_str());
+        RCLCPP_INFO(this->get_logger(), "Baudrate: %d", baudrate_);
+        RCLCPP_INFO(this->get_logger(), "Wheel base: %.3f", wheel_base_);
+
         open_serial();
 
         subscription_ = this->create_subscription<geometry_msgs::msg::Twist>(
             "/cmd_vel", 10,
             std::bind(&CmdVelToSerial::cmdvel_callback, this, std::placeholders::_1)
         );
+
+        RCLCPP_INFO(this->get_logger(), "Subscribed to /cmd_vel");
     }
 
     ~CmdVelToSerial() {
         if (serial_fd_ >= 0) {
+            RCLCPP_INFO(this->get_logger(), "Closing serial port.");
             close(serial_fd_);
         }
     }
@@ -42,7 +49,11 @@ private:
         }
 
         struct termios tty;
-        tcgetattr(serial_fd_, &tty);
+        if (tcgetattr(serial_fd_, &tty) != 0) {
+            RCLCPP_ERROR(this->get_logger(), "Failed to get serial attributes");
+            return;
+        }
+
         cfsetospeed(&tty, B115200);
         cfsetispeed(&tty, B115200);
 
@@ -59,27 +70,44 @@ private:
         tty.c_cflag &= ~CSTOPB;
         tty.c_cflag &= ~CRTSCTS;
 
-        tcsetattr(serial_fd_, TCSANOW, &tty);
+        if (tcsetattr(serial_fd_, TCSANOW, &tty) != 0) {
+            RCLCPP_ERROR(this->get_logger(), "Failed to set serial attributes");
+            return;
+        }
+
+        RCLCPP_INFO(this->get_logger(), "Serial port opened successfully.");
     }
 
     void cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr msg) {
         double v = msg->linear.x;
         double w = msg->angular.z;
-
+    
         double left_speed = v - (wheel_base_ / 2.0) * w;
         double right_speed = v + (wheel_base_ / 2.0) * w;
-
+    
         int l = static_cast<int>(left_speed * 100);
         int r = static_cast<int>(right_speed * 100);
-
+    
+        // 최소 PWM 보정 (0은 그대로, 1~49는 ±50으로 클램핑)
+        if (std::abs(l) > 0 && std::abs(l) < 50) l = (l > 0) ? 50 : -50;
+        if (std::abs(r) > 0 && std::abs(r) < 50) r = (r > 0) ? 50 : -50;
+    
         std::stringstream ss;
         ss << "L" << l << "R" << r << "\n";
         std::string command = ss.str();
-
+    
+        RCLCPP_INFO(this->get_logger(), "Received cmd_vel: linear=%.2f, angular=%.2f", v, w);
+        RCLCPP_INFO(this->get_logger(), "Mapped speeds: L=%d, R=%d", l, r);
+        RCLCPP_INFO(this->get_logger(), "Sending: %s", command.c_str());
+    
         if (serial_fd_ >= 0) {
-            write(serial_fd_, command.c_str(), command.length());
+            ssize_t bytes_written = write(serial_fd_, command.c_str(), command.length());
+            if (bytes_written < 0) {
+                RCLCPP_ERROR(this->get_logger(), "Failed to write to serial port.");
+            }
         }
     }
+    
 
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
     std::string port_;
