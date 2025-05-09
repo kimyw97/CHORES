@@ -1,0 +1,11 @@
+# @format
+
+slam_toolbox:
+  ros__parameters:
+    use_sim_time: false
+    minimum_travel_distance: 0.2
+    minimum_travel_heading: 0.1
+    transform_publish_period: 0.05
+    transform_timeout: 0.8
+    map_update_interval: 3.0
+    scan_subscriber_queue_size: 200
