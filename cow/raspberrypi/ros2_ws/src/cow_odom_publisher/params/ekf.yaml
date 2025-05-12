@@ -1,6 +1,6 @@
 # @format
 
-ekf_node:
+ekf_filter_node:
   ros__parameters:
     frequency: 30.0
     sensor_timeout: 0.1
@@ -8,7 +8,7 @@ ekf_node:
     # 좌표 설정
     base_link_frame: base_footprint
     odom_frame: odom
-    world_frame: odom # 외부 위치 추정 없음 (AMCL 없을 때는 odom이 world)
+    world_frame: map
 
     publish_tf: true
     map_frame: map
@@ -17,8 +17,8 @@ ekf_node:
     transform_time_offset: 0.0
 
     # 입력 센서들
-    odometry0: odom
-    odometry0_config: [
+    odom0: odom
+    odom0_config: [
         true,
         true,
         false, # x, y, z

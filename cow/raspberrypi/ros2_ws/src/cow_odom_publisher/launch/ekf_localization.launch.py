@@ -8,6 +8,6 @@ def generate_launch_description():
             executable='ekf_node',
             name='ekf_filter_node',
             output='screen',
-            parameters=['/home/kimyw/vscode/CHORES/cow/raspberrypi/ros2_ws/src/cow_odom_publisher/parmas/ekf.yaml']
+            parameters=['/home/kimyw/vscode/CHORES/cow/raspberrypi/ros2_ws/src/cow_odom_publisher/params/ekf.yaml']
         )
     ])

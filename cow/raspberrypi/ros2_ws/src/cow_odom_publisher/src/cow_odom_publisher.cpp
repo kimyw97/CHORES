@@ -89,7 +89,6 @@ private:
       "left_wheel_joint",
       "right_wheel_joint",
       "base_footprint_to_base_link",
-      "base_link_to_laser"
     };
     joint_state.position = {
       left_angle,
