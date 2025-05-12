@@ -6,23 +6,15 @@ from launch.substitutions import ThisLaunchFileDir, FindExecutable
 import os
 
 def generate_launch_description():
-    # rplidar_ros의 rplidar.launch.py 포함
-    rplidar_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
-            os.path.join(
-                os.path.join(
-                    os.getenv('AMENT_PREFIX_PATH').split(':')[0],
-                    'share', 'rplidar_ros', 'launch', 'rplidar.launch.py'
-                )
-            )
-        ])
-    )
+    rplidar_path = FindPackageShare('rplidar_ros').find('rplidar_ros')
+    rplidar_launch = os.path.join(rplidar_path, 'launch', 'rplidar.launch.py')
 
     return LaunchDescription([
-        # LiDAR 실행
-        rplidar_launch,
-
-        # robot_monitoring 실행
+        # rplidar 실행
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(rplidar_launch)
+        ),
+    # robot_monitoring 실행
         Node(
             package='robot_monitoring',
             executable='robot_monitor_node',
