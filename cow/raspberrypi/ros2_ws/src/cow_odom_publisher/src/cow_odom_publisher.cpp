@@ -1,11 +1,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "robot_monitoring/msg/robot_status.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-#include "tf2_ros/transform_broadcaster.h"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-
 
 class OdomFromStatusNode : public rclcpp::Node {
 public:
@@ -15,7 +12,6 @@ public:
     last_left_ticks_(0), last_right_ticks_(0), first_reading_(true)
   {
     odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
-    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
     sub_ = this->create_subscription<robot_monitoring::msg::RobotStatus>(
       "robot_status", 10,
@@ -23,7 +19,7 @@ public:
     );
 
     last_time_ = this->now();
-    RCLCPP_INFO(this->get_logger(), "Odometry from status node started.");
+    RCLCPP_INFO(this->get_logger(), "Odometry publisher started (TF removed).");
   }
 
 private:
@@ -38,31 +34,6 @@ private:
       last_right_ticks_ = right_ticks;
       last_time_ = current_time;
       first_reading_ = false;
-
-      tf2::Quaternion q;
-      q.setRPY(0, 0, 0);
-      q.normalize();
-
-      // 초기 Odometry 퍼블리시
-      nav_msgs::msg::Odometry odom;
-      odom.header.stamp = current_time;
-      odom.header.frame_id = "odom";
-      odom.child_frame_id = "base_footprint";
-      odom.pose.pose.position.x = 0.0;
-      odom.pose.pose.position.y = 0.0;
-      odom.pose.pose.orientation = tf2::toMsg(q);
-      odom_pub_->publish(odom);
-
-      // 초기 TF 퍼블리시
-      geometry_msgs::msg::TransformStamped tf;
-      tf.header.stamp = current_time;
-      tf.header.frame_id = "odom";
-      tf.child_frame_id = "base_footprint";
-      tf.transform.translation.x = 0.0;
-      tf.transform.translation.y = 0.0;
-      tf.transform.translation.z = 0.0;
-      tf.transform.rotation = tf2::toMsg(q);
-      tf_broadcaster_->sendTransform(tf);
       return;
     }
 
@@ -102,21 +73,11 @@ private:
     odom.pose.pose.orientation = tf2::toMsg(q);
     odom.twist.twist.linear.x = d_center / dt;
     odom.twist.twist.angular.z = d_theta / dt;
-    odom_pub_->publish(odom);
 
-    geometry_msgs::msg::TransformStamped tf;
-    tf.header.stamp = current_time;
-    tf.header.frame_id = "odom";
-    tf.child_frame_id = "base_footprint";
-    tf.transform.translation.x = x_;
-    tf.transform.translation.y = y_;
-    tf.transform.translation.z = 0.0;
-    tf.transform.rotation = tf2::toMsg(q);
-    tf_broadcaster_->sendTransform(tf);
+    odom_pub_->publish(odom);
   }
 
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
-  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   rclcpp::Subscription<robot_monitoring::msg::RobotStatus>::SharedPtr sub_;
 
   rclcpp::Time last_time_;
