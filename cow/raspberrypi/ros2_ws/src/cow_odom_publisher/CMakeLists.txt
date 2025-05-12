@@ -13,10 +13,11 @@ find_package(geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(robot_monitoring REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 add_executable(cow_odom_publisher src/cow_odom_publisher.cpp)
 ament_target_dependencies(cow_odom_publisher
-  rclcpp nav_msgs geometry_msgs tf2_ros robot_monitoring tf2_geometry_msgs)
+  rclcpp nav_msgs geometry_msgs tf2_ros robot_monitoring tf2_geometry_msgs sensor_msgs)
 install(TARGETS cow_odom_publisher DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
