@@ -79,14 +79,24 @@ private:
     odom.twist.twist.angular.z = d_theta / dt;
     odom_pub_->publish(odom);
 
-    // Publish JointState
+    // Publish JointState (include fixed joints too)
     double left_angle = left_ticks * (2.0 * M_PI / TICKS_PER_REV);
     double right_angle = right_ticks * (2.0 * M_PI / TICKS_PER_REV);
 
     sensor_msgs::msg::JointState joint_state;
     joint_state.header.stamp = current_time;
-    joint_state.name = {"left_wheel_joint", "right_wheel_joint"};
-    joint_state.position = {left_angle, right_angle};
+    joint_state.name = {
+      "left_wheel_joint",
+      "right_wheel_joint",
+      "base_footprint_to_base_link",
+      "base_link_to_laser"
+    };
+    joint_state.position = {
+      left_angle,
+      right_angle,
+      0.0,  // fixed joint
+      0.0   // fixed joint
+    };
     joint_pub_->publish(joint_state);
 
     // Logging
