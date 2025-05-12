@@ -8,7 +8,7 @@ ekf_filter_node:
     # 좌표 설정
     base_link_frame: base_footprint
     odom_frame: odom
-    world_frame: map
+    world_frame: odom
 
     publish_tf: true
     map_frame: map
