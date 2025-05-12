@@ -77,6 +77,16 @@ private:
     odom.pose.pose.orientation = tf2::toMsg(q);
     odom.twist.twist.linear.x = d_center / dt;
     odom.twist.twist.angular.z = d_theta / dt;
+    for (int i = 0; i < 36; ++i) {
+      odom.pose.covariance[i] = 0.0;
+      odom.twist.covariance[i] = 0.0;
+    }
+    odom.pose.covariance[0] = 0.01;   // x
+    odom.pose.covariance[7] = 0.01;   // y
+    odom.pose.covariance[35] = 0.05;  // yaw
+
+    odom.twist.covariance[0] = 0.01;  // vx
+    odom.twist.covariance[35] = 0.05; // vyaw
     odom_pub_->publish(odom);
 
     // Publish JointState (include fixed joints too)
@@ -89,6 +99,7 @@ private:
       "left_wheel_joint",
       "right_wheel_joint",
       "base_footprint_to_base_link",
+      "base_link_to_laser"
     };
     joint_state.position = {
       left_angle,
