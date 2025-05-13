@@ -1,0 +1,37 @@
+# @format
+
+ekf_filter_node:
+  ros__parameters:
+    frequency: 30.0
+    sensor_timeout: 0.1
+
+    # 좌표 설정
+    base_link_frame: base_footprint
+    odom_frame: odom
+    world_frame: odom
+
+    publish_tf: true
+    map_frame: map
+    use_control: false
+    two_d_mode: true
+    transform_time_offset: 0.0
+
+    # 입력 센서들
+    odom0: odom
+    odom0_config: [
+        true,
+        true,
+        false, # x, y, z
+        false,
+        false,
+        true, # roll, pitch, yaw
+        true,
+        true,
+        false, # vx, vy, vz
+        false,
+        false,
+        true, # vroll, vpitch, vyaw
+        false,
+        false,
+        false,
+      ] # ax, ay, az

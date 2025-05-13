@@ -1,11 +1,10 @@
 #include "rclcpp/rclcpp.hpp"
 #include "robot_monitoring/msg/robot_status.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-#include "tf2_ros/transform_broadcaster.h"
+#include "sensor_msgs/msg/joint_state.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-
+#include <cmath>
 
 class OdomFromStatusNode : public rclcpp::Node {
 public:
@@ -15,7 +14,7 @@ public:
     last_left_ticks_(0), last_right_ticks_(0), first_reading_(true)
   {
     odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
-    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
 
     sub_ = this->create_subscription<robot_monitoring::msg::RobotStatus>(
       "robot_status", 10,
@@ -23,7 +22,7 @@ public:
     );
 
     last_time_ = this->now();
-    RCLCPP_INFO(this->get_logger(), "Odometry from status node started.");
+    RCLCPP_INFO(this->get_logger(), "Odometry publisher started (TF removed, joint_states added).");
   }
 
 private:
@@ -38,31 +37,6 @@ private:
       last_right_ticks_ = right_ticks;
       last_time_ = current_time;
       first_reading_ = false;
-
-      tf2::Quaternion q;
-      q.setRPY(0, 0, 0);
-      q.normalize();
-
-      // 초기 Odometry 퍼블리시
-      nav_msgs::msg::Odometry odom;
-      odom.header.stamp = current_time;
-      odom.header.frame_id = "odom";
-      odom.child_frame_id = "base_footprint";
-      odom.pose.pose.position.x = 0.0;
-      odom.pose.pose.position.y = 0.0;
-      odom.pose.pose.orientation = tf2::toMsg(q);
-      odom_pub_->publish(odom);
-
-      // 초기 TF 퍼블리시
-      geometry_msgs::msg::TransformStamped tf;
-      tf.header.stamp = current_time;
-      tf.header.frame_id = "odom";
-      tf.child_frame_id = "base_footprint";
-      tf.transform.translation.x = 0.0;
-      tf.transform.translation.y = 0.0;
-      tf.transform.translation.z = 0.0;
-      tf.transform.rotation = tf2::toMsg(q);
-      tf_broadcaster_->sendTransform(tf);
       return;
     }
 
@@ -93,6 +67,7 @@ private:
     q.setRPY(0, 0, th_);
     q.normalize();
 
+    // Publish Odometry
     nav_msgs::msg::Odometry odom;
     odom.header.stamp = current_time;
     odom.header.frame_id = "odom";
@@ -102,21 +77,46 @@ private:
     odom.pose.pose.orientation = tf2::toMsg(q);
     odom.twist.twist.linear.x = d_center / dt;
     odom.twist.twist.angular.z = d_theta / dt;
+    for (int i = 0; i < 36; ++i) {
+      odom.pose.covariance[i] = 0.0;
+      odom.twist.covariance[i] = 0.0;
+    }
+    odom.pose.covariance[0] = 0.01;   // x
+    odom.pose.covariance[7] = 0.01;   // y
+    odom.pose.covariance[35] = 0.05;  // yaw
+
+    odom.twist.covariance[0] = 0.01;  // vx
+    odom.twist.covariance[35] = 0.05; // vyaw
     odom_pub_->publish(odom);
 
-    geometry_msgs::msg::TransformStamped tf;
-    tf.header.stamp = current_time;
-    tf.header.frame_id = "odom";
-    tf.child_frame_id = "base_footprint";
-    tf.transform.translation.x = x_;
-    tf.transform.translation.y = y_;
-    tf.transform.translation.z = 0.0;
-    tf.transform.rotation = tf2::toMsg(q);
-    tf_broadcaster_->sendTransform(tf);
+    // Publish JointState (include fixed joints too)
+    double left_angle = left_ticks * (2.0 * M_PI / TICKS_PER_REV);
+    double right_angle = right_ticks * (2.0 * M_PI / TICKS_PER_REV);
+
+    sensor_msgs::msg::JointState joint_state;
+    joint_state.header.stamp = current_time;
+    joint_state.name = {
+      "left_wheel_joint",
+      "right_wheel_joint",
+      "base_footprint_to_base_link",
+      "base_link_to_laser"
+    };
+    joint_state.position = {
+      left_angle,
+      right_angle,
+      0.0,  // fixed joint
+      0.0   // fixed joint
+    };
+    joint_pub_->publish(joint_state);
+
+    // Logging
+    RCLCPP_INFO(this->get_logger(),
+      "x: %.3f, y: %.3f, th: %.3f | L_angle: %.2f rad, R_angle: %.2f rad",
+      x_, y_, th_, left_angle, right_angle);
   }
 
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
-  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_pub_;
   rclcpp::Subscription<robot_monitoring::msg::RobotStatus>::SharedPtr sub_;
 
   rclcpp::Time last_time_;

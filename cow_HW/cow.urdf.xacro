@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<robot name="my_robot"
+    xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- Base dimensions -->
+    <xacro:property name="base_width" value="0.3"/>
+    <xacro:property name="base_length" value="0.34"/>
+    <xacro:property name="base_height" value="0.17"/>
+
+    <!-- Wheel dimensions -->
+    <xacro:property name="wheel_radius" value="0.045"/>
+    <xacro:property name="wheel_width" value="0.04"/>
+    <xacro:property name="wheel_ygap" value="0.03"/>
+    <xacro:property name="wheel_zoff" value="0.045"/>
+    <xacro:property name="wheel_xoff" value="0.22"/>
+
+    <!-- Laser position -->
+    <xacro:property name="laser_x" value="0.145"/>
+    <xacro:property name="laser_y" value="0.0"/>
+    <xacro:property name="laser_z" value="0.225"/>
+
+    <!-- Base footprint -->
+    <link name="base_footprint"/>
+    <joint name="base_footprint_to_base_link" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Base link -->
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="${base_length} ${base_width} ${base_height}"/>
+            </geometry>
+            <origin xyz="0 0 ${base_height / 2}" rpy="0 0 0"/>
+            <material name="gray">
+                <color rgba="0.5 0.5 0.5 1"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${base_length} ${base_width} ${base_height}"/>
+            </geometry>
+            <origin xyz="0 0 ${base_height / 2}" rpy="0 0 0"/>
+        </collision>
+        <inertial>
+            <mass value="5.0"/>
+            <origin xyz="0 0 ${base_height / 2}" rpy="0 0 0"/>
+            <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+        </inertial>
+    </link>
+
+    <!-- Left wheel -->
+    <link name="left_wheel"/>
+    <joint name="left_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="left_wheel"/>
+        <origin xyz="${-wheel_xoff} ${base_width / 2 + wheel_ygap} ${wheel_zoff}" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+    </joint>
+
+    <!-- Right wheel -->
+    <link name="right_wheel"/>
+    <joint name="right_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="right_wheel"/>
+        <origin xyz="${-wheel_xoff} ${-base_width / 2 - wheel_ygap} ${wheel_zoff}" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+    </joint>
+
+    <!-- Laser -->
+    <link name="laser">
+        <visual>
+            <geometry>
+                <cylinder length="0.05" radius="0.03"/>
+            </geometry>
+            <origin xyz="0 0 0.025" rpy="0 0 0"/>
+            <material name="blue">
+                <color rgba="0.0 0.5 1.0 1"/>
+            </material>
+        </visual>
+    </link>
+    <joint name="base_link_to_laser" type="fixed">
+        <parent link="base_link"/>
+        <child link="laser"/>
+        <origin xyz="${laser_x} ${laser_y} ${laser_z}" rpy="0 0 0"/>
+    </joint>
+
+</robot>

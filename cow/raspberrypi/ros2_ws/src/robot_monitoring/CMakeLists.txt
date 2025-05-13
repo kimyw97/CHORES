@@ -19,6 +19,9 @@ ament_target_dependencies(robot_monitor_node rclcpp std_msgs)
 rosidl_target_interfaces(robot_monitor_node
   ${PROJECT_NAME} "rosidl_typesupport_cpp")
 install(TARGETS robot_monitor_node DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

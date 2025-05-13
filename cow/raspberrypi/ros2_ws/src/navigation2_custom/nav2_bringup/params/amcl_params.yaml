@@ -1,0 +1,8 @@
+# @format
+
+amcl:
+  ros__parameters:
+    use_sim_time: false
+    transform_tolerance: 0.8
+    min_particles: 500
+    max_particles: 2000
