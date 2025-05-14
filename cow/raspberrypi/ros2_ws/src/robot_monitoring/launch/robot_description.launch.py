@@ -28,8 +28,6 @@ def generate_launch_description():
                     'robot_description': Command(['xacro ', urdf_path]),
                     'use_sim_time': False,
                     'publish_frequency': 10.0,
-                    'use_static_tf': False,
-                    'ignore_timestamp': True
                 }
             ]
         )

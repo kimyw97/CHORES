@@ -7,7 +7,7 @@ import os
 
 def generate_launch_description():
     rplidar_path = FindPackageShare('rplidar_ros').find('rplidar_ros')
-    rplidar_launch = os.path.join(rplidar_path, 'launch', 'rplidar.launch.py')
+    rplidar_launch = os.path.join(rplidar_path, 'launch', 'rplidar_a1_launch.py')
 
     return LaunchDescription([
         # rplidar 실행
