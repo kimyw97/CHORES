@@ -1,5 +1,6 @@
 {
   "files.associations": {
     "fstream": "cpp"
-  }
+  },
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/my_robot_arm_pkg/compile_commands.json"
 }
