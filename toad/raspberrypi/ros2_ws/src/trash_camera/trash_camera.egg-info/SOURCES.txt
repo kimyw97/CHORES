@@ -1,0 +1,15 @@
+package.xml
+setup.cfg
+setup.py
+test/test_copyright.py
+test/test_flake8.py
+test/test_pep257.py
+trash_camera/__init__.py
+trash_camera/trash_camera_node.py
+trash_camera.egg-info/PKG-INFO
+trash_camera.egg-info/SOURCES.txt
+trash_camera.egg-info/dependency_links.txt
+trash_camera.egg-info/entry_points.txt
+trash_camera.egg-info/requires.txt
+trash_camera.egg-info/top_level.txt
+trash_camera.egg-info/zip-safe
