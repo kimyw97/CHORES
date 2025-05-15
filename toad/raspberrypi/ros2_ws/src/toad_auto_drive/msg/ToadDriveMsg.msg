@@ -1,4 +1,2 @@
-float64 right_motor
-float64 left_motor
-bool trash_detected
-float64 distance
+int64 right_motor
+int64 left_motor
