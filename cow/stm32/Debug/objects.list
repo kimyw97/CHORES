@@ -4,6 +4,7 @@
 "./Core/Src/SMS_STS.o"
 "./Core/Src/delay_us.o"
 "./Core/Src/freertos.o"
+"./Core/Src/jh_servo_control.o"
 "./Core/Src/main.o"
 "./Core/Src/servo.o"
 "./Core/Src/stm32f4xx_hal_msp.o"
