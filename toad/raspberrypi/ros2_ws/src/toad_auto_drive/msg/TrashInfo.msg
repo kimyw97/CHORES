@@ -1,0 +1,3 @@
+float64 trash_distance
+bool trash_detected
+int32 trash_center

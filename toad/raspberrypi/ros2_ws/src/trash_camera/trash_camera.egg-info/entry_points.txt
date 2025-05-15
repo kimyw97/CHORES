@@ -1,0 +1,3 @@
+[console_scripts]
+trash_camera_node = trash_camera.trash_camera_node:main
+
