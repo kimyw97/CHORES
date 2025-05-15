@@ -41,7 +41,8 @@ class ToadControllerNode : public rclcpp::Node{
     rclcpp::Subscription<toad_auto_drive::msg:::TrashInfo>::SharedPtr drive_subscription_;
 
 
-    void trashDetectCallback(){
+    void trashDetectCallback(const toad_auto_drive::msg::TrashInfo::SharedPtr msg){
+        
 
     }
 
