@@ -7,8 +7,8 @@ from ArducamDepthCamera.ArducamDepthCamera import FrameType, Connection
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Bool, Float32
 from geometry_msgs.msg import Point
+from trash_camera.msg import TrashInfo  # 커스텀 메시지 import
 
 TRASH_CLASSES = [
     'Aluminium foil', 'Battery', 'Aluminium blister pack', 'Carded blister pack', 'Other plastic bottle',
@@ -25,11 +25,9 @@ class TrashCameraPublisher(Node):
     def __init__(self):
         super().__init__('trash_camera_node')
 
-        self.trash_pub = self.create_publisher(Bool, 'is_trash', 10)
-        self.dist_pub = self.create_publisher(Float32, 'trash_distance', 10)
-        self.center_pub = self.create_publisher(Point, 'trash_center', 10)
+        self.trash_pub = self.create_publisher(TrashInfo, 'trash_info', 10)
 
-        self.model = YOLO('/home/jdamr/Downloads/litter-detection-master/runs/detect/train/yolov8s_100epochs/weights/best.pt')
+        self.model = YOLO('/home/vboxuser/Downloads/litter-detection-master/runs/detect/train/yolov8s_100epochs/weights/best.pt')
 
         self.tof = ArducamDepthCamera.ArducamCamera()
         if self.tof.open(Connection.CSI, 0) != 0:
@@ -69,7 +67,7 @@ class TrashCameraPublisher(Node):
         if not ret or frame is None:
             return
 
-        frame = frame[10:480, :]  # ROI 적용 (상단 100픽셀 제거)
+        frame = frame[10:480, :]  # ROI 적용 (상단 10픽셀 제거)
         roi_height = frame.shape[0]
 
         depth_data = self.get_valid_depth()
@@ -80,8 +78,8 @@ class TrashCameraPublisher(Node):
             return
 
         depth_image = depth_data.depth_data
-
         results = self.model.predict(frame, conf=0.5)[0]
+
         for box in results.boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             confidence = box.conf[0].item()
@@ -103,11 +101,16 @@ class TrashCameraPublisher(Node):
 
                 is_trash = label in TRASH_CLASSES
 
-                self.trash_pub.publish(Bool(data=is_trash))
-                self.dist_pub.publish(Float32(data=corrected_cm))
-                self.center_pub.publish(Point(x=float(cx_rgb), y=float(cy_rgb), z=0.0))
+                msg = TrashInfo()
+                msg.is_trash = is_trash
+                msg.distance_cm = corrected_cm
+                msg.center = Point(x=float(cx_rgb), y=float(cy_rgb), z=0.0)
 
-                self.get_logger().info(f"🟢 감지됨: {label} {confidence:.2f} | 거리: {corrected_cm:.1f}cm | 쓰레기: {is_trash}")
+                self.trash_pub.publish(msg)
+
+                self.get_logger().info(
+                    f"🟢 감지됨: {label} {confidence:.2f} | 거리: {corrected_cm:.1f}cm | 쓰레기: {is_trash}"
+                )
                 break
 
 def main(args=None):
