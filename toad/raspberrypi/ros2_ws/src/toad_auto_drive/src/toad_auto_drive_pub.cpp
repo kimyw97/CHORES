@@ -24,15 +24,7 @@ public:
         net_.setPreferableBackend(cv::dnn::DNN_BACKEND_OPENCV);
         net_.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
 
-        stereo_bm_ = cv::StereoBM::create(16, 15);
-
-        Q_ = (cv::Mat_<double>(4, 4) << 
-            1, 0, 0, -320,
-            0, 1, 0, -240,
-            0, 0, 0, 500,
-            0, 0, 1.0 / 0.05, 0
-        );
-
+   
         try {
             serial_.setPort("/dev/ttyUSB0");
             serial_.setBaudrate(115200);
@@ -47,15 +39,14 @@ public:
             RCLCPP_INFO(this->get_logger(), "Serial port opened successfully.");
         }
 
-        cap_left_.open("/dev/video2");
-        cap_right_.open("/dev/video4");
+        cap_.open(0);
 
-        if (!cap_left_.isOpened() || !cap_right_.isOpened()) {
+        if (!cap_.isOpened()) {
             RCLCPP_ERROR(this->get_logger(), "Failed to open one or both cameras");
             throw std::runtime_error("camera open failed");
         }
 
-        cv::namedWindow("Webcam", cv::WINDOW_AUTOSIZE);
+        cv::namedWindow("cap", cv::WINDOW_AUTOSIZE);
 
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(100),
@@ -64,7 +55,7 @@ public:
     }
 
     ~ToadAutoDrivePubNode() {
-        cv::destroyWindow("Webcam");
+        cv::destroyWindow("cap");
     }
 
 private:
@@ -78,75 +69,35 @@ private:
     serial::Serial serial_;
     int cnt;
     int midle_cnt;
-    cv::VideoCapture cap_right_, cap_left_;
+    cv::VideoCapture cap_;
     cv::dnn::Net net_;
-    cv::Ptr<cv::StereoBM> stereo_bm_;
-    cv::Mat Q_;
-    float distance;
-
 
     void check_go_possible_() {
         auto msg = toad_auto_drive::msg::ToadDriveMsg();
-        cv::Mat right_frame, left_frame;
-        cap_right_ >> right_frame;
-        cap_left_ >> left_frame;
+        cv::Mat frame;
+        cap_ >> frame;
 
-        if (right_frame.empty() || left_frame.empty()) {
+        if (frame.empty()) {
             RCLCPP_WARN(this->get_logger(), "Captured empty frame");
             return;
         }
 
-        if (detect_trash(right_frame) || detect_trash(left_frame)) {
+        if (detect_trash(frame)) {
             msg.trash_detected = true;
         }
 
-        cv::Mat left_gray, right_gray;
-        cv::cvtColor(left_frame, left_gray, cv::COLOR_BGR2GRAY);
-        cv::cvtColor(right_frame, right_gray, cv::COLOR_BGR2GRAY);
-
-        cv::Mat disparity, depth_map;
-        stereo_bm_->compute(left_gray, right_gray, disparity);
-        cv::reprojectImageTo3D(disparity, depth_map, Q_);
-
-        int cx = depth_map.cols / 2;
-        int cy = depth_map.rows / 2;
-        cv::Vec3f point = depth_map.at<cv::Vec3f>(cy, cx);
-        float distance_m = point[2];
-        float distance_cm = distance_m * 100.0f;
-        msg.distance = distance_cm;
-
-        cv::Mat disp8;
-        disparity.convertTo(disp8, CV_8U, 255.0 / (stereo_bm_->getNumDisparities() * 16.0));
-        
-        if(distance_m >0)
-        RCLCPP_INFO(this->get_logger(), "Distance : %.2f cm", distance_cm);
-
-        std::ostringstream oss;
-        if (distance_m > 0){
-            oss << "Distance : " << std::fixed << std::setprecision(2) << distance_cm << " cm";
-            
-        }else{
-            oss << "Distance : Invalid";
-        }
-
-
-        cv::circle(left_gray, cv::Point(cx, cy), 5, cv::Scalar(0, 0, 255), -1);
+        cv::Mat gray;
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
         if (msg.trash_detected) {
             RCLCPP_INFO(this->get_logger(), "쓰레기 발견");
-            if(distance_cm > 11){
-                msg.left_motor = 30.0;
-                msg.right_motor = 30.0;
-                publisher_->publish(msg);
-            }else if(distance_cm <= 11 && distance_cm > 0){
-                msg.left_motor = 0.0;
-                msg.right_motor = 0.0;
-                publisher_->publish(msg);
-            }
+            msg.left_motor = 0.0;
+            msg.right_motor = 0.0;
+            publisher_->publish(msg);
             return;
         }
-
-        cv::imshow("Webcam", left_gray);
+        
+        cv::imshow("cap", frame);
         cv::waitKey(1);
 
         if (serial_.available()) {
@@ -238,7 +189,7 @@ private:
 
     // 쓰레기 감지 함수
     bool detect_trash(const cv::Mat &frame) {
-        if (frame.empty() || frame.channels() != 3)
+        if (frame.empty())
             return false;
 
         cv::Mat blob;
@@ -283,7 +234,7 @@ private:
         if (!indices.empty()) {
             for (int idx : indices) {
                 cv::rectangle(frame, boxes[idx], cv::Scalar(0, 255, 0), 2);
-                cv::putText(frame, "trash", boxes[idx].tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
+                cv::putText(frame, "cap", boxes[idx].tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
             }
             return true;
         }
@@ -300,3 +251,4 @@ int main(int argc, char **argv) {
     rclcpp::shutdown();
     return 0;
 }
+
