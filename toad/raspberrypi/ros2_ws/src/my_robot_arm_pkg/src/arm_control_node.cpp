@@ -14,11 +14,15 @@ public:
 
 private:
     void topic_callback(const std_msgs::msg::String::SharedPtr msg);
+    void gripper_callback(const std_msgs::msg::String::SharedPtr msg);
     void send_joint_angles(const std::vector<int> &angles);
+    void send_gripper_angle(int angle);
 
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr gripper_subscription_;
     serial::Serial serial_;
     std::unordered_map<std::string, std::vector<int>> joint_angles_map_;
+    std::unordered_map<std::string, std::vector<int>> gripper_angles_map_;
 };
 
 //생성자 구현
@@ -28,6 +32,11 @@ ArmControlNode::ArmControlNode()
     subscription_ = this->create_subscription<std_msgs::msg::String>(
         "arm_command",10,
         std::bind(&ArmControlNode::topic_callback, this, std::placeholders::_1));
+
+    gripper_subscription_=this ->create_subscription<std_msgs::msg::String>(
+        "gripper_command" , 10,
+        std::bind(&ArmControlNode::gripper_callback, this, std::placeholders::_1));
+    
 
     try{
         serial_.setPort("/dev/ttyUSB0");
@@ -46,8 +55,12 @@ ArmControlNode::ArmControlNode()
         {"pose3", {600,1750,1750,2400,1800,0}},  // pick up 위치
         {"pose4", {400,2400,1400,2400,1500,0}},  // 이송 위치
         {"pose5", {800,1900,2000,2400,2000,0}},  // 쓰레기통 위치
-        {"gripper_open", {0,0,0,0,0,2200}},  // 그리퍼 열림
-        {"gripper_close", {0,0,0,0,0,1400}},  // 그리퍼 닫힘
+    };
+
+    //gripper각도 설정
+    gripper_angles_map_ = {
+        {"gripper_open", {2000}},  // 그리퍼 열림
+        {"gripper_close", {1000}},  // 그리퍼 닫힘
     };
             
 }
@@ -60,6 +73,18 @@ void ArmControlNode::topic_callback(const std_msgs::msg::String::SharedPtr msg)
         RCLCPP_INFO(this->get_logger(), "Sent angles for %s", msg->data.c_str());
     } else {
         RCLCPP_WARN(this->get_logger(), "Unknown command: %s", msg->data.c_str());
+    }
+}
+
+void ArmControlNode::gripper_callback(const std_msgs::msg::String::SharedPtr msg)
+{
+    auto it = gripper_angles_map_.find(msg->data);
+    if (it != gripper_angles_map_.end()) {
+        int angle = it -> second[0];
+        send_gripper_angle(angle);
+        RCLCPP_INFO(this->get_logger(), "sent gripper angle for mode '%s': %d", msg->data.c_str(), angle);
+    } else {
+        RCLCPP_WARN(this->get_logger(), "Unknown gripper command: %s", msg->data.c_str());
     }
 }
 
@@ -79,6 +104,19 @@ void ArmControlNode::send_joint_angles(const std::vector<int> &angles)
 
     serial_.write(packet);
 }
+
+void ArmControlNode::send_gripper_angle(int angle)
+{
+    if(!serial_.isOpen()) {
+        RCLCPP_ERROR(this->get_logger(), "serial port not open");
+        return;
+    }
+
+    std::string packet = "#G,"; //G로 시작하는 그리퍼 전용 패킷
+    packet += std::to_string(angle);
+    packet += "\n";
+    serial_.write(packet);
+}     //	#G,2000\n 이렇게 시리얼로 내보냄.
 
 int main(int argc, char *argv[])
 {
