@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>motion_mirror_test</name>
+  <version>0.1.0</version>
+  <description>Motion Mirror Return 테스트용 실행 노드</description>
+
+  <maintainer email="your@email.com">Your Name</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>motion_interfaces</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

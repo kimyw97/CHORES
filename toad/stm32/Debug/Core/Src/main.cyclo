@@ -1,20 +1,11 @@
-../Core/Src/main.c:146:5:main	1
-../Core/Src/main.c:252:6:SystemClock_Config	3
-../Core/Src/main.c:298:13:MX_I2C1_Init	2
-../Core/Src/main.c:332:13:MX_I2S3_Init	2
-../Core/Src/main.c:366:13:MX_TIM2_Init	6
-../Core/Src/main.c:423:13:MX_TIM3_Init	6
-../Core/Src/main.c:480:13:MX_TIM4_Init	7
-../Core/Src/main.c:543:13:MX_USART2_UART_Init	2
-../Core/Src/main.c:576:13:MX_GPIO_Init	1
-../Core/Src/main.c:686:6:HAL_UART_RxCpltCallback	9
-../Core/Src/main.c:718:6:MotorControlTask	2
-../Core/Src/main.c:733:6:FeedbackTask	1
-../Core/Src/main.c:749:6:StartDefaultTask	1
-../Core/Src/main.c:763:6:set_motor_pwm	3
-../Core/Src/main.c:791:6:is_cliff_detected	3
-../Core/Src/main.c:799:6:parse_motor_command_LR	3
-../Core/Src/main.c:812:6:set_servo_angle	13
-../Core/Src/main.c:858:6:RobotArmControlTask	4
-../Core/Src/main.c:899:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Src/main.c:916:6:Error_Handler	1
+C:\ST\STM32CubeIDE_1.17.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344\tools\bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1/cmath:234:3:constexpr float std::fabs(float)	1
+../Core/Src/main.cpp:106:16:int main()	3
+../Core/Src/main.cpp:165:6:void SystemClock_Config()	3
+../Core/Src/main.cpp:227:13:void MX_GPIO_Init()	1
+../Core/Src/main.cpp:254:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	5
+../Core/Src/main.cpp:272:6:void process_command(char*)	5
+../Core/Src/main.cpp:304:6:void set_motor_pwm(float, float)	5
+../Core/Src/main.cpp:321:6:void send_infrared_feedback()	1
+../Core/Src/main.cpp:336:6:void Error_Handler()	1
+../Core/Src/main.cpp:345:1:void __static_initialization_and_destruction_0()	1
+../Core/Src/main.cpp:345:1:cpp)	1
