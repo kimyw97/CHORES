@@ -33,3 +33,4 @@ void MX_TIM4_Init(void)
 
   HAL_TIM_MspPostInit(&htim4);
 }
+

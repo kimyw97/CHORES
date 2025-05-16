@@ -1,11 +1,10 @@
-C:\ST\STM32CubeIDE_1.17.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344\tools\bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/c++/13.3.1/cmath:234:3:constexpr float std::fabs(float)	1
-../Core/Src/main.cpp:106:16:int main()	3
-../Core/Src/main.cpp:165:6:void SystemClock_Config()	3
-../Core/Src/main.cpp:227:13:void MX_GPIO_Init()	1
-../Core/Src/main.cpp:254:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	5
-../Core/Src/main.cpp:272:6:void process_command(char*)	5
-../Core/Src/main.cpp:304:6:void set_motor_pwm(float, float)	5
-../Core/Src/main.cpp:321:6:void send_infrared_feedback()	1
-../Core/Src/main.cpp:336:6:void Error_Handler()	1
-../Core/Src/main.cpp:345:1:void __static_initialization_and_destruction_0()	1
-../Core/Src/main.cpp:345:1:cpp)	1
+../Core/Src/main.cpp:113:16:int main()	3
+../Core/Src/main.cpp:175:6:void SystemClock_Config()	3
+../Core/Src/main.cpp:237:13:void MX_GPIO_Init()	1
+../Core/Src/main.cpp:278:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	5
+../Core/Src/main.cpp:296:6:void process_command(char*)	6
+../Core/Src/main.cpp:337:6:void set_motor_pwm(int, int)	5
+../Core/Src/main.cpp:385:6:void send_infrared_feedback()	1
+../Core/Src/main.cpp:401:6:void Error_Handler()	1
+../Core/Src/main.cpp:410:1:void __static_initialization_and_destruction_0()	1
+../Core/Src/main.cpp:410:1:cpp)	1

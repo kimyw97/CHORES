@@ -85,7 +85,7 @@ main-build: STM32_CHORES_2.elf secondary-outputs
 
 # Tool invocations
 STM32_CHORES_2.elf STM32_CHORES_2.map: $(OBJS) $(USER_OBJS) C:\Users\tnsqo\STM32CubeIDE\workspace_chore\STM32_CHORES_2\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "STM32_CHORES_2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\tnsqo\STM32CubeIDE\workspace_chore\STM32_CHORES_2\STM32F407VGTX_FLASH.ld" -Wl,-Map="STM32_CHORES_2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+	arm-none-eabi-g++ -o "STM32_CHORES_2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\tnsqo\STM32CubeIDE\workspace_chore\STM32_CHORES_2\STM32F407VGTX_FLASH.ld" -Wl,-Map="STM32_CHORES_2.map" -Wl,--gc-sections -static -u _scanf_float -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
