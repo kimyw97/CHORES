@@ -5,6 +5,7 @@
 #include <string>
 #include "toad_auto_drive/msg/toad_drive_msg.hpp"
 
+
 using std::placeholders::_1;
 
 class ToadAutoDriveSub : public rclcpp::Node{
@@ -17,8 +18,8 @@ class ToadAutoDriveSub : public rclcpp::Node{
         );
 
         try{
-            //serial_.setPort("/dev/serial0");
-            serial_.setPort("/dev/ttyUSB0");
+            serial_.setPort("/dev/serial0");
+            // serial_.setPort("/dev/ttyUSB0");
             serial_.setBaudrate(115200);
             serial::Timeout to = serial::Timeout::simpleTimeout(1000);
             serial_.setTimeout(to);
@@ -33,7 +34,6 @@ class ToadAutoDriveSub : public rclcpp::Node{
     private:
     float right_pwm = 0.0;
     float left_pwm = 0.0;
-    double trash_detect= false;
     serial::Serial serial_;
     rclcpp::Subscription<toad_auto_drive::msg::ToadDriveMsg>::SharedPtr subscription_;
     float distance = 0.0;

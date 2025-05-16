@@ -17,15 +17,10 @@
     <!-- Laser position -->
     <xacro:property name="laser_x" value="0.145"/>
     <xacro:property name="laser_y" value="0.0"/>
-    <xacro:property name="laser_z" value="0.225"/>
+    <xacro:property name="laser_z" value="0.160"/>
 
     <!-- Base footprint -->
     <link name="base_footprint"/>
-    <joint name="base_footprint_to_base_link" type="fixed">
-        <parent link="base_footprint"/>
-        <child link="base_link"/>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-    </joint>
 
     <!-- Base link -->
     <link name="base_link">
@@ -50,6 +45,11 @@
             <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
         </inertial>
     </link>
+    <joint name="base_footprint_to_base_link" type="fixed">
+        <parent link="base_footprint" />
+        <child link="base_link" />
+        <origin xyz="0.0 0.0 ${-(wheel_radius+wheel_zoff)}" rpy="0 0 0"/>
+    </joint>
 
     <!-- Left wheel -->
     <link name="left_wheel"/>

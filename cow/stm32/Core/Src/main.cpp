@@ -150,7 +150,7 @@ void setMotorSpeed(char motor_position, int speed);
 void motorStart();
 void motorShutdown();
 void startEncoder(TIM_HandleTypeDef *htim);
-int16_t readEncoder(TIM_HandleTypeDef *htim);
+long readEncoder(TIM_HandleTypeDef *htim);
 int16_t calRPM(char method, int8_t MT, int16_t encoder_count, float time,
 		int8_t PPR, int8_t ratio);
 
@@ -812,8 +812,8 @@ void startEncoder(TIM_HandleTypeDef *htim) {
 	HAL_TIM_Encoder_Start(htim, TIM_CHANNEL_ALL);
 }
 
-int16_t readEncoder(TIM_HandleTypeDef *htim) {
-	return (int16_t) __HAL_TIM_GET_COUNTER(htim);
+long readEncoder(TIM_HandleTypeDef *htim) {
+	return (long) __HAL_TIM_GET_COUNTER(htim);
 }
 
 /* MF = Multiplication Factor
@@ -858,16 +858,16 @@ void parseCommand(char *cmd) {
 		if (right_pwm < -255)
 			right_pwm = -255;
 
-		if (left_pwm > 0 & right_pwm > 0) {
+		if (left_pwm > 0 && right_pwm > 0) {
 			setMotorMode(FORWARD);
 
-		} else if (left_pwm < 0 & right_pwm < 0) {
+		} else if (left_pwm < 0 && right_pwm < 0) {
 			setMotorMode(BACKWARD);
 
-		} else if (left_pwm > 0 & right_pwm < 0) {
+		} else if (left_pwm > 0 && right_pwm < 0) {
 			setMotorMode(ROTATE_RIGHT);
 
-		} else if (left_pwm < 0 & right_pwm > 0) {
+		} else if (left_pwm < 0 && right_pwm > 0) {
 			setMotorMode(ROTATE_LEFT);
 
 		} else {
@@ -899,7 +899,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			} else if (strncmp(msg.cmd, "S", 1) == 0) {
 				xQueueSendFromISR(ServoQueue, &msg, &xHigherPriorityTaskWoken);
 			} else if (strncmp(msg.cmd, "U", 1) == 0
-					| strncmp(msg.cmd, "D", 1) == 0) {
+					|| strncmp(msg.cmd, "D", 1) == 0) {
 				xQueueSendFromISR(StepperQueue, &msg,
 						&xHigherPriorityTaskWoken);
 			}
@@ -1094,8 +1094,8 @@ void vSystemMonitorTask(void *argument) {
 	char tx_buffer[128];
 	/* Infinite loop */
 	for (;;) {
-		int left_encoder = readEncoder(&htim3);
-		int right_encoder = readEncoder(&htim2);
+		long left_encoder = readEncoder(&htim3);
+		long right_encoder = readEncoder(&htim2);
 
 		// 현재 왼쪽/오른쪽 PWM 값을 저장하는 변수 필요 (추가해야 함)
 		extern int current_left_pwm;
@@ -1107,7 +1107,7 @@ void vSystemMonitorTask(void *argument) {
 						1 : 0;
 
 		snprintf(tx_buffer, sizeof(tx_buffer),
-				"SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%d,R%d\n",
+				"SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%ld,R%ld\n",
 				current_left_pwm, current_right_pwm, trash_state,
 				emergency_state, left_encoder, right_encoder);
 

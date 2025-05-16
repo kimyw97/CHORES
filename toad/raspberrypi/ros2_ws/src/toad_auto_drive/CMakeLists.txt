@@ -14,6 +14,7 @@ find_package(rosidl_default_generators REQUIRED)
 # 메시지 인터페이스 생성
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ToadDriveMsg.msg"
+  "msg/TrashInfo.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
 
