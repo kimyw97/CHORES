@@ -21,7 +21,6 @@ class ToadControllerNode : public rclcpp::Node{
             std::bind(&ToadControllerNode::driveCallback, this, _1)
         );
 
-
         try{
             serial_.setPort("/dev/ttyUSB0");
             serial_.setBaudrate(115200);
@@ -33,6 +32,7 @@ class ToadControllerNode : public rclcpp::Node{
             rclcpp::shutdown();
         }
     }
+    
     private :
     serial::Serial serial_;
     int right_pwm = 0;
