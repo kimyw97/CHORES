@@ -20,8 +20,8 @@ public:
 
    
         try {
-            // serial_.setPort("/dev/ttyUSB0");
-            serial_.setPort("/dev/serial)");
+            serial_.setPort("/dev/ttyUSB0");
+            //serial_.setPort("/dev/serial0)");
             serial_.setBaudrate(115200);
             serial::Timeout to = serial::Timeout::simpleTimeout(100);
             serial_.setTimeout(to);
@@ -59,9 +59,6 @@ private:
     int midle_cnt;
     void check_go_possible_() {
         auto msg = toad_auto_drive::msg::ToadDriveMsg();
-        
-
-        
 
         if (serial_.available()) {
             std::string data = serial_.readline(1024, "\n");
@@ -77,77 +74,14 @@ private:
             if (std::regex_search(data, match, s2_regex) && match.size() > 1) {
                 R = (std::stoi(match[1]) == 1);
             }
+            
+            msg.left_sensor = L;
+            msg.right_sensor = R;
 
-            if (edge_detect && !midle_clean) {
-                if (!L && !R) {
-                    msg = turn_left(msg);
-                } else if (L && R) {
-                    msg = go_straight(msg);
-                    edge_detect = false;
-                    cnt++;
-                    if (cnt == 4) {
-                        cnt = 0;
-                        midle_clean = true;
-                    }
-                } else if (L && !R) {
-                    msg = turn_left(msg);
-                } else if (!L && R) {
-                    msg = turn_right(msg);
-                }
-            } else if (!edge_detect && !midle_clean) {
-                if (L && R) {
-                    msg = go_straight(msg);
-                } else if (L && !R) {
-                    msg = turn_left(msg);
-                } else if (!L && R) {
-                    msg = turn_right(msg);
-                } else if (!L && !R) {
-                    msg = turn_left(msg);
-                    edge_detect = true;
-                }
-            } else if (!edge_detect && midle_clean) {
-                if (midle_cnt == 0) {
-                    msg = go_straight(msg);
-                    midle_cnt++;
-                } else if (midle_cnt == 1) {
-                    msg = turn_left(msg);
-                    midle_cnt++;
-                } else if (midle_cnt >= 2) {
-                    if (L && R) {
-                        msg = go_straight(msg);
-                        midle_cnt++;
-                    } else if (!L && !R) {
-                        midle_cnt = 0;
-                        midle_clean = false;
-                        msg.left_motor = 0;
-                        msg.right_motor = 0;
-                    }
-                }
-            }
-            RCLCPP_INFO(this->get_logger(), "Recive : left : %ld, right : %ld, %ld", msg.left_motor, msg.right_motor);
         publisher_->publish(msg);
         }
 
         
-    }
-
-    // ========== 유틸 함수 ==========
-    toad_auto_drive::msg::ToadDriveMsg go_straight(toad_auto_drive::msg::ToadDriveMsg msg) {
-        msg.left_motor = 30;
-        msg.right_motor = 30;
-        return msg;
-    }
-
-    toad_auto_drive::msg::ToadDriveMsg turn_left(toad_auto_drive::msg::ToadDriveMsg msg) {
-        msg.left_motor = -30;
-        msg.right_motor = 30;
-        return msg;
-    }
-
-    toad_auto_drive::msg::ToadDriveMsg turn_right(toad_auto_drive::msg::ToadDriveMsg msg) {
-        msg.left_motor = 30;
-        msg.right_motor = -30;
-        return msg;
     }
 
     
