@@ -1,3 +1,3 @@
-float64 trash_distance
-bool trash_detected
-int32 trash_center
+bool is_trash
+float32 distance_cm
+int64 center

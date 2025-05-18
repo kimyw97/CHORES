@@ -34,12 +34,7 @@ public:
             RCLCPP_INFO(this->get_logger(), "Serial port opened successfully.");
         }
 
-        cap_.open(0);
-
-        if (!cap_.isOpened()) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to open one or both cameras");
-            throw std::runtime_error("camera open failed");
-        }
+        
 
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(100),
@@ -52,7 +47,8 @@ public:
 
 private:
     rclcpp::TimerBase::SharedPtr timer_;
-    int right_motor_;
+    long int right_motor_;
+    long 
     int left_motor_;
     bool edge_detect;
     bool midle_clean;
@@ -128,7 +124,7 @@ private:
                     }
                 }
             }
-            RCLCPP_INFO(this->get_logger(), "Recive : left : %d, right : %d, %d", msg.left_motor, msg.right_motor);
+            RCLCPP_INFO(this->get_logger(), "Recive : left : %ld, right : %ld, %ld", msg.left_motor, msg.right_motor);
         publisher_->publish(msg);
         }
 
@@ -154,7 +150,7 @@ private:
         return msg;
     }
 
-    }
+    
 };
 
 // 메인 함수

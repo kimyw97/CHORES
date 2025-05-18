@@ -37,6 +37,7 @@ class ToadAutoDriveSub : public rclcpp::Node{
     serial::Serial serial_;
     rclcpp::Subscription<toad_auto_drive::msg::ToadDriveMsg>::SharedPtr subscription_;
     float distance = 0.0;
+    bool trash_detect;
 
     void driveCallback(const toad_auto_drive::msg::ToadDriveMsg::SharedPtr msg){
         
