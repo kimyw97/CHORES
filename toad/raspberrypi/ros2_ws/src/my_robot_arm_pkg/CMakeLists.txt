@@ -9,9 +9,11 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(serial REQUIRED)
 include_directories(/usr/local/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc/serial)
 include_directories(/usr/include)
+
 link_directories(/usr/local/lib)
 
 # 👉 실행 노드 추가
@@ -22,7 +24,7 @@ add_executable(arm_control_pub_node
   src/arm_control_pub_node.cpp
 )
 
-target_include_directories(arm_control_node PRIVATE inc)
+target_include_directories(arm_control_node PRIVATE inc impl)
 target_link_libraries(arm_control_node serial)
 
 

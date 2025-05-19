@@ -20,8 +20,8 @@ public:
 
    
         try {
-            serial_.setPort("/dev/ttyUSB0");
-            //serial_.setPort("/dev/serial0)");
+            //serial_.setPort("/dev/ttyUSB0");
+            serial_.setPort("/dev/serial0");
             serial_.setBaudrate(115200);
             serial::Timeout to = serial::Timeout::simpleTimeout(100);
             serial_.setTimeout(to);
