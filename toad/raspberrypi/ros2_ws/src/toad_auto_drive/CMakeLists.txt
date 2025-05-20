@@ -15,6 +15,7 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ToadDriveMsg.msg"
   "msg/TrashInfo.msg"
+  "msg/ToadTeleopMsg.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
 
@@ -27,8 +28,25 @@ ament_target_dependencies(toad_auto_drive_pub
   std_msgs
   sensor_msgs
   geometry_msgs
-  serial
-  OpenCV         # 🔹 OpenCV 의존성 추가
+  serial     # 🔹 OpenCV 의존성 추가
+)
+
+add_executable(toad_teleop_pub src/toad_teleop_pub.cpp)
+ament_target_dependencies(toad_teleop_pub
+rclcpp
+std_msgs
+sensor_msgs
+geometry_msgs
+serial
+)
+
+add_executable(toad_teleop_sub src/toad_teleop_sub.cpp)
+ament_target_dependencies(toad_teleop_pub
+rclcpp
+std_msgs
+sensor_msgs
+geometry_msgs
+serial
 )
 
 # 서브스크라이버 노드
@@ -49,10 +67,17 @@ rosidl_get_typesupport_target(
 # 🔹 OpenCV 링크 추가
 target_link_libraries(toad_auto_drive_pub
    ${TYPESUPPORT_TARGET}
-   ${OpenCV_LIBS}
 )
 target_link_libraries(auto_drive_sub_node
    ${TYPESUPPORT_TARGET}
+)
+
+target_link_libraries(toad_teleop_pub
+${TYPESUPPORT_TARGET}
+)
+
+target_link_libraries(toad_teleop_sub
+${TYPESUPPORT_TARGET}
 )
 
 # 설치 지시
