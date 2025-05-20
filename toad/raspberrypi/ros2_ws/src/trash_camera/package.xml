@@ -1,18 +1,22 @@
-<?xml version="1.0"?>
 <package format="3">
   <name>trash_camera</name>
-  <version>0.0.1</version>
-  <description>YOLO + ToF 기반 쓰레기 감지 카메라 노드</description>
-  <maintainer email="you@example.com">jdamr</maintainer>
+  <version>0.0.0</version>
+  <description>Trash detection using YOLO and Arducam</description>
+  <maintainer email="your@email.com">우영</maintainer>
   <license>MIT</license>
 
-  <buildtool_depend>ament_python</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
 
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
+  <build_depend>geometry_msgs</build_depend>
   <exec_depend>geometry_msgs</exec_depend>
 
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+
   <export>
-    <build_type>ament_python</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

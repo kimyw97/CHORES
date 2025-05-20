@@ -1,0 +1,24 @@
+../Core/Inc/SCSerial.h:34:14:virtual int SCSerial::getErr()	1
+../Core/Src/SCSCL.cpp:8:1:SCSCL::SCSCL()	1
+../Core/Src/SCSCL.cpp:13:1:SCSCL::SCSCL(u8)	1
+../Core/Src/SCSCL.cpp:17:1:SCSCL::SCSCL(u8, u8)	1
+../Core/Src/SCSCL.cpp:21:5:virtual int SCSCL::WritePos(u8, u16, u16, u16)	1
+../Core/Src/SCSCL.cpp:31:5:virtual int SCSCL::WritePosEx(u8, s16, u16, u8)	1
+../Core/Src/SCSCL.cpp:43:5:virtual int SCSCL::RegWritePos(u8, u16, u16, u16)	1
+../Core/Src/SCSCL.cpp:53:5:virtual int SCSCL::CalibrationOfs(u8)	1
+../Core/Src/SCSCL.cpp:57:6:virtual void SCSCL::SyncWritePos(u8*, u8, u16*, u16*, u16*)	4
+../Core/Src/SCSCL.cpp:79:5:virtual int SCSCL::PWMMode(u8)	1
+../Core/Src/SCSCL.cpp:89:5:virtual int SCSCL::WritePWM(u8, s16)	2
+../Core/Src/SCSCL.cpp:101:5:virtual int SCSCL::EnableTorque(u8, u8)	1
+../Core/Src/SCSCL.cpp:106:5:virtual int SCSCL::unLockEprom(u8)	1
+../Core/Src/SCSCL.cpp:111:5:virtual int SCSCL::LockEprom(u8)	1
+../Core/Src/SCSCL.cpp:116:5:virtual int SCSCL::FeedBack(int)	2
+../Core/Src/SCSCL.cpp:127:5:virtual int SCSCL::ReadPos(int)	3
+../Core/Src/SCSCL.cpp:144:5:virtual int SCSCL::ReadSpeed(int)	5
+../Core/Src/SCSCL.cpp:165:5:virtual int SCSCL::ReadLoad(int)	5
+../Core/Src/SCSCL.cpp:185:5:virtual int SCSCL::ReadVoltage(int)	3
+../Core/Src/SCSCL.cpp:200:5:virtual int SCSCL::ReadTemper(int)	3
+../Core/Src/SCSCL.cpp:215:5:virtual int SCSCL::ReadMove(int)	3
+../Core/Src/SCSCL.cpp:230:5:virtual int SCSCL::ReadMode(int)	3
+../Core/Src/SCSCL.cpp:253:5:virtual int SCSCL::ReadInfoValue(int, int)	1
+../Core/Src/SCSCL.cpp:260:5:virtual int SCSCL::ReadCurrent(int)	5

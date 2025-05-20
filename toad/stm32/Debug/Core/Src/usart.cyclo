@@ -1,0 +1,3 @@
+../Core/Src/usart.c:17:5:__io_putchar	1
+../Core/Src/usart.c:24:6:MX_USART2_UART_Init	2
+../Core/Src/usart.c:42:6:MX_USART3_UART_Init	2

@@ -32,22 +32,117 @@ class ToadAutoDriveSub : public rclcpp::Node{
       
     }
     private:
-    float right_pwm = 0.0;
-    float left_pwm = 0.0;
+    int right_motor = 0;
+    int left_motor = 0;
+    bool L = false;
+    bool R = false;
+
+    bool edge_detect = false;
+    bool midle_clean = false;
+    bool is_turn = false;
+    int cnt = 0;
+    int midle_cnt = 0;
+
     serial::Serial serial_;
     rclcpp::Subscription<toad_auto_drive::msg::ToadDriveMsg>::SharedPtr subscription_;
-    float distance = 0.0;
+    
 
     void driveCallback(const toad_auto_drive::msg::ToadDriveMsg::SharedPtr msg){
         
-        right_pwm = msg->right_motor;
-        left_pwm = msg->left_motor;
-        trash_detect = msg->trash_detected;
-        distance = msg->distance;
+        L = msg->left_sensor;
+        R = msg->right_sensor;
+        std::string message;
 
-        std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "t"+std::to_string(trash_detect) + "d" + std::to_string(distance) + "\n";
-        serial_.write(message);
-        RCLCPP_INFO(this->get_logger(), "sent : left : %f, rifgt : %f", left_pwm, right_pwm);
+        if (edge_detect && !midle_clean) {
+            RCLCPP_INFO(this->get_logger(), "모서리 회전 판단");
+                if (!L && !R) {
+                    stop();
+                    message = "L" + std::to_string(left_motor) + "R" + std::to_string(right_motor) + "\n";
+                    serial_.write(message);
+                    turn_left();
+                    RCLCPP_INFO(this->get_logger(), "회전");
+
+                } else if (L && R) {
+                    go_straight();
+                    edge_detect = false;
+                    RCLCPP_INFO(this->get_logger(), "회전 완료");
+                    cnt++;
+                    if (cnt == 4) {
+                        cnt = 0;
+                        midle_clean = true;
+                    }
+                } else if (L && !R) {
+                    turn_left();
+                } else if (!L && R) {
+                    turn_right();
+                    
+                }
+            } else if (!edge_detect && !midle_clean) {
+                if (L && R) {
+                    go_straight();
+                } else if (L && !R) {
+                    turn_left();
+                } else if (!L && R) {
+                    turn_right();
+                } else if (!L && !R) {
+                    turn_left();
+                    edge_detect = true;
+                }
+            } else if (!edge_detect && midle_clean) {
+                if (midle_cnt == 0) {
+                    go_straight();
+                    midle_cnt++;
+                } else if (midle_cnt == 1) {
+                    turn_left();
+                    midle_cnt++;
+                } else if (midle_cnt >= 2) {
+                    if (L && R) {
+                        go_straight();
+                        midle_cnt++;
+                    } else if (!L && !R) {
+                        midle_cnt = 0;
+                        midle_clean = false;
+                        left_motor = 0;
+                        right_motor = 0;
+                    }
+                }
+            }
+            message = "L" + std::to_string(left_motor) + "R" + std::to_string(right_motor) + "\n";
+            serial_.write(message);
+
+    }
+
+    void go_straight() {
+        left_motor = 25;
+        right_motor = 25;
+        RCLCPP_INFO(this->get_logger(), "직진");
+        
+    }
+
+    void turn_left() {
+        left_motor = -25;
+        right_motor = 25;
+        RCLCPP_INFO(this->get_logger(), "좌회전");
+        
+    }
+
+    void turn_right() {
+        left_motor = 25;
+        right_motor = -25;
+        RCLCPP_INFO(this->get_logger(), "우회전");
+        
+    }
+
+    void stop(){
+        left_motor = 0;
+        right_motor = 0;
+        RCLCPP_INFO(this->get_logger(), "정지");
+    }
+
+    void back(){
+        left_motor = -25;
+        right_motor = -25;
+        RCLCPP_INFO(this->get_logger(), "후진");
     }
 };
 

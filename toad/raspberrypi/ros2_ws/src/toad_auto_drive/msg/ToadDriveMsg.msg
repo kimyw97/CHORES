@@ -1,2 +1,2 @@
-int64 right_motor
-int64 left_motor
+bool right_sensor
+bool left_sensor

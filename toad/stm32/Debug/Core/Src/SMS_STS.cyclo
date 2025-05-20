@@ -1,0 +1,23 @@
+../Core/Inc/SCSerial.h:34:14:virtual int SCSerial::getErr()	1
+../Core/Src/SMS_STS.cpp:9:1:SMS_STS::SMS_STS()	1
+../Core/Src/SMS_STS.cpp:14:1:SMS_STS::SMS_STS(u8)	1
+../Core/Src/SMS_STS.cpp:18:1:SMS_STS::SMS_STS(u8, u8)	1
+../Core/Src/SMS_STS.cpp:22:5:virtual int SMS_STS::WritePosEx(u8, s16, u16, u8)	3
+../Core/Src/SMS_STS.cpp:48:5:virtual int SMS_STS::RegWritePosEx(u8, s16, u16, u8)	2
+../Core/Src/SMS_STS.cpp:65:6:virtual void SMS_STS::Action()	1
+../Core/Src/SMS_STS.cpp:82:6:virtual void SMS_STS::SyncWritePosEx(u8*, u8, s16*, u16*, u8*)	5
+../Core/Src/SMS_STS.cpp:108:5:virtual int SMS_STS::WheelMode(u8)	1
+../Core/Src/SMS_STS.cpp:113:5:virtual int SMS_STS::WriteSpe(u8, s16, u8)	2
+../Core/Src/SMS_STS.cpp:127:5:virtual int SMS_STS::EnableTorque(u8, u8)	1
+../Core/Src/SMS_STS.cpp:132:5:virtual int SMS_STS::unLockEprom(u8)	1
+../Core/Src/SMS_STS.cpp:137:5:virtual int SMS_STS::LockEprom(u8)	1
+../Core/Src/SMS_STS.cpp:142:5:virtual int SMS_STS::CalibrationOfs(u8)	1
+../Core/Src/SMS_STS.cpp:147:5:virtual int SMS_STS::FeedBack(int)	2
+../Core/Src/SMS_STS.cpp:158:5:virtual int SMS_STS::ReadPos(int)	5
+../Core/Src/SMS_STS.cpp:179:5:virtual int SMS_STS::ReadSpeed(int)	5
+../Core/Src/SMS_STS.cpp:200:5:virtual int SMS_STS::ReadLoad(int)	5
+../Core/Src/SMS_STS.cpp:220:5:virtual int SMS_STS::ReadVoltage(int)	3
+../Core/Src/SMS_STS.cpp:235:5:virtual int SMS_STS::ReadTemper(int)	3
+../Core/Src/SMS_STS.cpp:250:5:virtual int SMS_STS::ReadMove(int)	3
+../Core/Src/SMS_STS.cpp:265:5:virtual int SMS_STS::ReadMode(int)	3
+../Core/Src/SMS_STS.cpp:280:5:virtual int SMS_STS::ReadCurrent(int)	5

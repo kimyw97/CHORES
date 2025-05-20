@@ -1,0 +1,10 @@
+../Core/Inc/SCSerial.h:34:14:virtual int SCSerial::getErr()	1
+../Core/Src/SCSerial.cpp:3:1:SCSerial::SCSerial()	1
+../Core/Src/SCSerial.cpp:9:1:SCSerial::SCSerial(u8)	1
+../Core/Src/SCSerial.cpp:15:1:SCSerial::SCSerial(u8, u8)	1
+../Core/Src/SCSerial.cpp:21:6:void SCSerial::begin(UART_HandleTypeDef*)	1
+../Core/Src/SCSerial.cpp:26:5:virtual int SCSerial::readSCS(unsigned char*, int)	5
+../Core/Src/SCSerial.cpp:43:5:virtual int SCSerial::writeSCS(unsigned char*, int)	3
+../Core/Src/SCSerial.cpp:50:5:virtual int SCSerial::writeSCS(unsigned char)	3
+../Core/Src/SCSerial.cpp:56:6:virtual void SCSerial::rFlushSCS()	1
+../Core/Src/SCSerial.cpp:61:6:virtual void SCSerial::wFlushSCS()	1
