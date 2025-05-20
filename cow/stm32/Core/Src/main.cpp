@@ -121,6 +121,10 @@ SCSCL servo;
 bool isTrashbinFull = false;
 int current_left_pwm;
 int current_right_pwm;
+int16_t left_encoder_prev_count = 0;
+int32_t left_encoder_total_count = 0;
+int16_t right_encoder_prev_count = 0;
+int32_t right_encoder_total_count = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -150,7 +154,7 @@ void setMotorSpeed(char motor_position, int speed);
 void motorStart();
 void motorShutdown();
 void startEncoder(TIM_HandleTypeDef *htim);
-long readEncoder(TIM_HandleTypeDef *htim);
+int32_t readEncoder(TIM_HandleTypeDef *htim);
 int16_t calRPM(char method, int8_t MT, int16_t encoder_count, float time,
 		int8_t PPR, int8_t ratio);
 
@@ -209,6 +213,12 @@ int main(void) {
 	startEncoder(&htim2);
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
 	__HAL_TIM_SET_COUNTER(&htim2, 0);
+
+	left_encoder_prev_count = __HAL_TIM_GET_COUNTER(&htim3);
+	left_encoder_total_count = 0;
+
+	right_encoder_prev_count = __HAL_TIM_GET_COUNTER(&htim2);
+	right_encoder_total_count = 0;
 	int8_t target_distance_cm = 100;
 	int8_t PPR = 11;
 	int8_t GEAR_RATIO = 30;
@@ -812,8 +822,33 @@ void startEncoder(TIM_HandleTypeDef *htim) {
 	HAL_TIM_Encoder_Start(htim, TIM_CHANNEL_ALL);
 }
 
-long readEncoder(TIM_HandleTypeDef *htim) {
-	return (long) __HAL_TIM_GET_COUNTER(htim);
+int32_t readEncoder(TIM_HandleTypeDef *htim) {
+    int16_t current_count = __HAL_TIM_GET_COUNTER(htim);
+    int16_t diff = 0;
+
+    if (htim->Instance == TIM3) {  // Right encoder
+        diff = current_count - left_encoder_prev_count;
+
+        // 오버플로우 / 언더플로우 보정
+        if (diff > 30000) diff -= 65536;
+        else if (diff < -30000) diff += 65536;
+
+        right_encoder_total_count += diff;
+        right_encoder_prev_count = current_count;
+        return right_encoder_total_count;
+    } else if (htim->Instance == TIM2) {  // Left encoder
+        diff = current_count - left_encoder_prev_count;
+
+        // 오버플로우 / 언더플로우 보정
+        if (diff > 30000) diff -= 65536;
+        else if (diff < -30000) diff += 65536;
+
+        left_encoder_total_count += diff;
+        left_encoder_prev_count = current_count;
+        return left_encoder_total_count;
+    } else {
+        return 0;  // 지원하지 않는 타이머
+    }
 }
 
 /* MF = Multiplication Factor
@@ -906,8 +941,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			rx_index = 0;  // 버퍼 초기화
 		} else {
 			if (rx_index < CMD_BUFFER_SIZE - 1) {
-				rx_cmd_buffer[rx_index++] = rx_data;
 			} else {
+				rx_cmd_buffer[rx_index++] = rx_data;
 				rx_index = 0;  // overflow 방지
 			}
 		}
@@ -1094,8 +1129,11 @@ void vSystemMonitorTask(void *argument) {
 	char tx_buffer[128];
 	/* Infinite loop */
 	for (;;) {
-		long left_encoder = readEncoder(&htim3);
-		long right_encoder = readEncoder(&htim2);
+		int32_t left_encoder = readEncoder(&htim3);
+		int32_t right_encoder = readEncoder(&htim2);
+		if(left_encoder <0) {
+			printf("test");
+		}
 
 		// 현재 왼쪽/오른쪽 PWM 값을 저장하는 변수 필요 (추가해야 함)
 		extern int current_left_pwm;
@@ -1107,7 +1145,7 @@ void vSystemMonitorTask(void *argument) {
 						1 : 0;
 
 		snprintf(tx_buffer, sizeof(tx_buffer),
-				"SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%ld,R%ld\n",
+				"SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%d,R%d\n",
 				current_left_pwm, current_right_pwm, trash_state,
 				emergency_state, left_encoder, right_encoder);
 

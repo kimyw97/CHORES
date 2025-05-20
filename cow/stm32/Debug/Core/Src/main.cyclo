@@ -1,34 +1,34 @@
 /home/kimyw/st/stm32cubeide_1.18.1_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.linux64_1.0.0.202410170706/tools/arm-none-eabi/include/c++/13.3.1/arm-none-eabi/thumb/v7e-m+fp/hard/bits/gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	1
-../Core/Src/main.cpp:168:5:int main()	1
-../Core/Src/main.cpp:312:6:void SystemClock_Config()	3
-../Core/Src/main.cpp:354:13:void MX_NVIC_Init()	1
-../Core/Src/main.cpp:365:13:void MX_I2C1_Init()	2
-../Core/Src/main.cpp:397:13:void MX_TIM2_Init()	3
-../Core/Src/main.cpp:447:13:void MX_TIM3_Init()	3
-../Core/Src/main.cpp:494:13:void MX_TIM4_Init()	7
-../Core/Src/main.cpp:553:13:void MX_UART4_Init()	2
-../Core/Src/main.cpp:584:13:void MX_UART5_Init()	2
-../Core/Src/main.cpp:615:13:void MX_USART2_UART_Init()	2
-../Core/Src/main.cpp:646:13:void MX_GPIO_Init()	1
-../Core/Src/main.cpp:750:6:void setMotorMode(DriveMode)	6
-../Core/Src/main.cpp:787:6:void setMotorSpeed(char, int)	4
-../Core/Src/main.cpp:801:6:void motorStart()	1
-../Core/Src/main.cpp:806:6:void motorShutdown()	1
-../Core/Src/main.cpp:811:6:void startEncoder(TIM_HandleTypeDef*)	1
-../Core/Src/main.cpp:815:6:long int readEncoder(TIM_HandleTypeDef*)	1
-../Core/Src/main.cpp:822:9:int16_t calRPM(char, int8_t, int16_t, float, int8_t, int8_t)	2
-../Core/Src/main.cpp:837:6:bool is_emergency_btn_pressed()	1
-../Core/Src/main.cpp:841:6:void parseCommand(char*)	15
-../Core/Src/main.cpp:884:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	9
-../Core/Src/main.cpp:932:6:void StartDefaultTask(void*)	1
-../Core/Src/main.cpp:951:6:void vCommTask(void*)	1
-../Core/Src/main.cpp:968:6:void vNavigationTask(void*)	3
-../Core/Src/main.cpp:1000:6:void vIntakeTask(void*)	3
-../Core/Src/main.cpp:1035:6:void vTrashBinMonitorTask(void*)	2
-../Core/Src/main.cpp:1062:6:void vLiftControlTask(void*)	4
-../Core/Src/main.cpp:1092:6:void vSystemMonitorTask(void*)	2
-../Core/Src/main.cpp:1130:6:void vEmergencyTask(void*)	2
-../Core/Src/main.cpp:1150:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	2
-../Core/Src/main.cpp:1166:6:void Error_Handler()	1
-../Core/Src/main.cpp:1173:1:void __static_initialization_and_destruction_0()	1
-../Core/Src/main.cpp:1173:1:cpp)	1
+../Core/Src/main.cpp:172:5:int main()	1
+../Core/Src/main.cpp:322:6:void SystemClock_Config()	3
+../Core/Src/main.cpp:364:13:void MX_NVIC_Init()	1
+../Core/Src/main.cpp:375:13:void MX_I2C1_Init()	2
+../Core/Src/main.cpp:407:13:void MX_TIM2_Init()	3
+../Core/Src/main.cpp:457:13:void MX_TIM3_Init()	3
+../Core/Src/main.cpp:504:13:void MX_TIM4_Init()	7
+../Core/Src/main.cpp:563:13:void MX_UART4_Init()	2
+../Core/Src/main.cpp:594:13:void MX_UART5_Init()	2
+../Core/Src/main.cpp:625:13:void MX_USART2_UART_Init()	2
+../Core/Src/main.cpp:656:13:void MX_GPIO_Init()	1
+../Core/Src/main.cpp:760:6:void setMotorMode(DriveMode)	6
+../Core/Src/main.cpp:797:6:void setMotorSpeed(char, int)	4
+../Core/Src/main.cpp:811:6:void motorStart()	1
+../Core/Src/main.cpp:816:6:void motorShutdown()	1
+../Core/Src/main.cpp:821:6:void startEncoder(TIM_HandleTypeDef*)	1
+../Core/Src/main.cpp:825:9:int32_t readEncoder(TIM_HandleTypeDef*)	5
+../Core/Src/main.cpp:857:9:int16_t calRPM(char, int8_t, int16_t, float, int8_t, int8_t)	2
+../Core/Src/main.cpp:872:6:bool is_emergency_btn_pressed()	1
+../Core/Src/main.cpp:876:6:void parseCommand(char*)	15
+../Core/Src/main.cpp:919:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	9
+../Core/Src/main.cpp:967:6:void StartDefaultTask(void*)	1
+../Core/Src/main.cpp:986:6:void vCommTask(void*)	1
+../Core/Src/main.cpp:1003:6:void vNavigationTask(void*)	3
+../Core/Src/main.cpp:1035:6:void vIntakeTask(void*)	3
+../Core/Src/main.cpp:1070:6:void vTrashBinMonitorTask(void*)	2
+../Core/Src/main.cpp:1097:6:void vLiftControlTask(void*)	4
+../Core/Src/main.cpp:1127:6:void vSystemMonitorTask(void*)	3
+../Core/Src/main.cpp:1168:6:void vEmergencyTask(void*)	2
+../Core/Src/main.cpp:1188:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	2
+../Core/Src/main.cpp:1204:6:void Error_Handler()	1
+../Core/Src/main.cpp:1211:1:void __static_initialization_and_destruction_0()	1
+../Core/Src/main.cpp:1211:1:cpp)	1
