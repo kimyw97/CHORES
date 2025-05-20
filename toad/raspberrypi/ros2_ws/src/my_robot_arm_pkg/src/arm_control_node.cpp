@@ -17,6 +17,7 @@ private:
     void gripper_callback(const std_msgs::msg::String::SharedPtr msg);
     void send_joint_angles(const std::vector<int> &angles);
     void send_gripper_angle(int angle);
+    std::string format_joint_angles(const std::vector<int>& angles);
 
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr gripper_subscription_;
@@ -34,7 +35,7 @@ ArmControlNode::ArmControlNode()
         std::bind(&ArmControlNode::topic_callback, this, std::placeholders::_1));
 
     gripper_subscription_=this ->create_subscription<std_msgs::msg::String>(
-        "gripper_command" , 10,
+        "arm_command" , 10,
         std::bind(&ArmControlNode::gripper_callback, this, std::placeholders::_1));
     
 
@@ -50,11 +51,11 @@ ArmControlNode::ArmControlNode()
 
     //각 pose 이름에 대응하는 조인트 각도 설정
     joint_angles_map_ = {
-        {"pose1", {500,2050,2100,2400,2000,0}},  // 기본위치
-        {"pose2", {500,1800,1900,2400,1800,0}},  // pick 위치
-        {"pose3", {600,1750,1750,2400,1800,0}},  // pick up 위치
-        {"pose4", {400,2400,1400,2400,1500,0}},  // 이송 위치
-        {"pose5", {800,1900,2000,2400,2000,0}},  // 쓰레기통 위치
+        {"pose1", {500,2050,2100,2400,2000,2000}},  // 기본위치
+        {"pose2", {500,1800,1900,2400,1800,2000}},  // pick 위치
+        {"pose3", {600,1750,1750,2400,1800,2000}},  // pick up 위치
+        {"pose4", {400,2400,1400,2400,1500,2000}},  // 이송 위치
+        {"pose5", {800,1900,2000,2400,2000,2000}},  // 쓰레기통 위치
     };
 
     //gripper각도 설정
@@ -63,6 +64,17 @@ ArmControlNode::ArmControlNode()
         {"gripper_close", {1000}},  // 그리퍼 닫힘
     };
             
+}
+
+std::string ArmControlNode::format_joint_angles(const std::vector<int>& angles) {
+    std::string result;
+    for (size_t i = 0; i< angles.size(); ++i){
+        result += std::to_string(i+1) + ":" + std::to_string(angles[i]);
+        if (i != angles.size() - 1)
+            result += ",";
+    }
+    return result;
+
 }
 
 void ArmControlNode::topic_callback(const std_msgs::msg::String::SharedPtr msg)
@@ -95,13 +107,7 @@ void ArmControlNode::send_joint_angles(const std::vector<int> &angles)
         return;
     }
 
-    std::string packet = "#"; // start delimiter
-    for (int angle : angles) {
-        packet += std::to_string(angle) + ",";
-    }
-    packet.pop_back(); //마지막 ',' 제거
-    packet += "\n";  // End delimiter
-
+    std::string packet = format_joint_angles(angles) + "\n"; // start delimiter
     serial_.write(packet);
 }
 
@@ -112,9 +118,7 @@ void ArmControlNode::send_gripper_angle(int angle)
         return;
     }
 
-    std::string packet = "#G,"; //G로 시작하는 그리퍼 전용 패킷
-    packet += std::to_string(angle);
-    packet += "\n";
+    std::string packet = "7:" + std::to_string(angle) + "\n"; 
     serial_.write(packet);
 }     //	#G,2000\n 이렇게 시리얼로 내보냄.
 

@@ -16,6 +16,7 @@ private:
     void send_joint_angles(const std::vector<int> &angles);
     void gripper_callback(const std_msgs::msg::String::SharedPtr msg);
     void send_gripper_angle(int angle);
+    std::string format_joint_angles(const std::vector<int>& angles);
 
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr gripper_subscription_;

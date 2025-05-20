@@ -17,8 +17,8 @@ class ToadAutoDriveSub : public rclcpp::Node{
         );
 
         try{
-            serial_.setPort("/dev/serial0");
-            //serial_.setPort("/dev/ttyUSB0");
+            //serial_.setPort("/dev/serial0");
+            serial_.setPort("/dev/ttyUSB0");
             serial_.setBaudrate(115200);
             serial::Timeout to = serial::Timeout::simpleTimeout(1000);
             serial_.setTimeout(to);
