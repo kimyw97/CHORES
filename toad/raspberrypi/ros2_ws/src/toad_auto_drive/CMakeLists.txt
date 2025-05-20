@@ -40,6 +40,15 @@ geometry_msgs
 serial
 )
 
+add_executable(toad_controller_node src/toad_controller_node.cpp)
+ament_target_dependencies(toad_controller_node
+	rclcpp
+	std_msgs
+	sensor_msgs
+	geometry_msgs
+	serial
+	)
+
 add_executable(toad_teleop_sub src/toad_teleop_sub.cpp)
 ament_target_dependencies(toad_teleop_sub
 rclcpp
@@ -80,11 +89,18 @@ target_link_libraries(toad_teleop_sub
 ${TYPESUPPORT_TARGET}
 )
 
+target_link_libraries(toad_controller_node
+	${TYPESUPPORT_TARGET}
+	)
+
 # 설치 지시
 install(
   TARGETS
     toad_auto_drive_pub
     auto_drive_sub_node
+    toad_teleop_pub
+    toad_teleop_sub
+    toad_controller_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

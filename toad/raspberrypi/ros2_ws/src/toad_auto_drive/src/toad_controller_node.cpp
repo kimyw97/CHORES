@@ -23,7 +23,7 @@ class ToadControllerNode : public rclcpp::Node{
         );
 
         try{
-            serial_.setPort("/dev/ttyUSB0");
+            serial_.setPort("/dev/serial0");
             serial_.setBaudrate(115200);
             serial::Timeout to = serial::Timeout::simpleTimeout(1000);
             serial_.setTimeout(to);
@@ -36,14 +36,11 @@ class ToadControllerNode : public rclcpp::Node{
     
     private :
     serial::Serial serial_;
-    int right_pwm = 0;
-    int left_pwm = 0;
+    bool right_sensor = false;
+    bool left_sensor = false;
     bool is_trash;
     float distance_cm;
     geometry_msgs::msg::Point center;
-    center.x = 100.0;
-    center.y = 0.0;
-    center.z = 0.0;
 
     rclcpp::Subscription<toad_auto_drive::msg::TrashInfo>::SharedPtr cap_subscription_;
     rclcpp::Subscription<toad_auto_drive::msg::ToadDriveMsg>::SharedPtr drive_subscription_;
@@ -52,22 +49,30 @@ class ToadControllerNode : public rclcpp::Node{
     void trashDetectCallback(const toad_auto_drive::msg::TrashInfo::SharedPtr msg){
         is_trash = msg->is_trash;
         distance_cm = msg->distance_cm;
-        center = msg->center;
+	center = msg->center;
+
+	 if(is_trash){
+                    std::string message = std::to_string(distance_cm) + "cm";
+                    RCLCPP_INFO(this->get_logger(), "%s", message);
+
+            }
+
 
         controller();
     }
 
     void driveCallback(const toad_auto_drive::msg::ToadDriveMsg::SharedPtr msg){
-        right_pwm = msg->right_motor;
-        left_pwm = msg->left_motor;
+        right_sensor = msg->right_sensor;
+        left_sensor = msg->left_sensor;
 
         controller();
     }
-
+    
     void controller(){
+	 
         if(is_trash){
             if(distance_cm > 30.0){
-                std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
+                std::string message = "L" + std::to_string(30) + "R" + std::to_string(30) + "\n";
                 serial_.write(message);
             }else if(distance_cm > 0 && distance_cm <= 30){
                 std::string message = "L0R0";
@@ -76,7 +81,7 @@ class ToadControllerNode : public rclcpp::Node{
                 serial_.write(message);
             }
         }else{
-            std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
+            std::string message = "L" + std::to_string(30) + "R" + std::to_string(30) + "\n";
             serial_.write(message);
         }
     }
