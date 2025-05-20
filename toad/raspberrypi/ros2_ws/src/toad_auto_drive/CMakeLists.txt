@@ -10,14 +10,16 @@ find_package(geometry_msgs REQUIRED)
 find_package(serial REQUIRED)
 find_package(OpenCV REQUIRED)  # 🔹 OpenCV 추가
 find_package(rosidl_default_generators REQUIRED)
+find_package(trash_camera REQUIRED)
 
 # 메시지 인터페이스 생성
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ToadDriveMsg.msg"
-  "msg/TrashInfo.msg"
   "msg/ToadTeleopMsg.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
+
+
 
 ament_export_dependencies(rosidl_default_runtime)
 
@@ -47,6 +49,7 @@ ament_target_dependencies(toad_controller_node
 	sensor_msgs
 	geometry_msgs
 	serial
+	trash_camera
 	)
 
 add_executable(toad_teleop_sub src/toad_teleop_sub.cpp)
