@@ -52,8 +52,8 @@ class ToadControllerNode : public rclcpp::Node{
 	center = msg->center;
 
 	 if(is_trash){
-                    std::string message = std::to_string(distance_cm) + "cm";
-                    RCLCPP_INFO(this->get_logger(), "%s", message);
+                    
+                    RCLCPP_INFO(this->get_logger(), "%f cm", distance_cm);
 
             }
 
