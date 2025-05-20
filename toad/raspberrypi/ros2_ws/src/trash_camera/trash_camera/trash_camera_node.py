@@ -20,7 +20,7 @@ TRASH_CLASSES = [
     'Magazine paper', 'Tissues'
 ]
 
-CORRECTION_FACTOR = 0.2
+CORRECTION_FACTOR = 0.115
 CONFIDENCE_THRESHOLD = 20
 MAX_DISTANCE_MM = 4000
 CAMERA_INDEX = 1  # /dev/video1
@@ -83,12 +83,12 @@ class TrashCameraPublisher(Node):
         confidence_image = depth_frame.confidence_data
         h_tof, w_tof = depth_image.shape[:2]
 
-        results = self.model.predict(frame, conf=0.3, imgsz=640)[0]  # conf 상향 및 이미지 해상도 고정
+        results = self.model.predict(frame, conf=0.2, imgsz=640)[0]  # conf 상향 및 이미지 해상도 고정
 
         for box in results.boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-            padding = 20
+            padding = 10
             x1 = max(0, x1 - padding)
             y1 = max(0, y1 - padding)
             x2 = min(frame.shape[1], x2 + padding)
