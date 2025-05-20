@@ -5,6 +5,7 @@
 #include <string>
 #include "toad_auto_drive/msg/toad_drive_msg.hpp"
 #include "toad_auto_drive/msg/trash_info.hpp"
+#include "geometry_msgs/msg/point.hpp"
 
 using std::placeholders::_1;
 
@@ -12,7 +13,7 @@ class ToadControllerNode : public rclcpp::Node{
     public :
     ToadControllerNode() : Node("toad_controller_node"){
         cap_subscription_ = this->create_subscription<toad_auto_drive::msg::TrashInfo>(
-            "/trash_detect", 10,
+            "trash_info", 10,
             std::bind(&ToadControllerNode::trashDetectCallback, this, _1)
         );
 
@@ -39,7 +40,11 @@ class ToadControllerNode : public rclcpp::Node{
     int left_pwm = 0;
     bool is_trash;
     float distance_cm;
-    int center;
+    geometry_msgs::msg::Point center;
+    center.x = 100.0;
+    center.y = 0.0;
+    center.z = 0.0;
+
     rclcpp::Subscription<toad_auto_drive::msg::TrashInfo>::SharedPtr cap_subscription_;
     rclcpp::Subscription<toad_auto_drive::msg::ToadDriveMsg>::SharedPtr drive_subscription_;
 
