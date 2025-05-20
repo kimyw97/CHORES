@@ -88,7 +88,7 @@ class TrashCameraPublisher(Node):
         for box in results.boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-            padding = 10
+            padding = 0
             x1 = max(0, x1 - padding)
             y1 = max(0, y1 - padding)
             x2 = min(frame.shape[1], x2 + padding)
@@ -126,7 +126,7 @@ class TrashCameraPublisher(Node):
                 label_text = "Trash" if is_trash else "Not Trash"
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
                 cv2.putText(frame, f"{label_text} ({corrected_cm:.1f}cm)",
-                            (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                            (x1, y1 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
                 self.get_logger().info(
                     f"🟢 검지됨: {label_text} | 거리: {corrected_cm:.1f}cm"
