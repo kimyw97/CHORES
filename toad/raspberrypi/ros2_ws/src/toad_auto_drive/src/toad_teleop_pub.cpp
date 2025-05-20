@@ -10,7 +10,7 @@ class TeleopDriveNode : public rclcpp::Node
 public:
     TeleopDriveNode() : Node("teleop_drive_node")
     {
-        pub_ = this->create_publisher<toad_auto_drive::msg::ToadDriveMsg>("/auto_drive", 10);
+        pub_ = this->create_publisher<toad_auto_drive::msg::ToadTeleopMsg>("/auto_drive", 10);
         RCLCPP_INFO(this->get_logger(), "Teleop node started. Use WASD to control, Q to quit.");
 
         configureTerminal();

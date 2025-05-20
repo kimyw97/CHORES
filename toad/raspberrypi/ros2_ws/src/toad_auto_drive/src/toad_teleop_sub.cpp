@@ -11,7 +11,7 @@ class ToadAutoDriveSub : public rclcpp::Node{
     public:
     ToadAutoDriveSub() : Node("auto_drive_sub_node"){
 
-        subscription_ = this->create_subscription<toad_auto_drive::msg::ToadDriveMsg>(
+        subscription_ = this->create_subscription<toad_auto_drive::msg::ToadTeleopMsg>(
             "/auto_drive", 10,
             std::bind(&ToadAutoDriveSub::driveCallback, this, _1)
         );
