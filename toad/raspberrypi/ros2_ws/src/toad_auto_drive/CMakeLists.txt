@@ -41,7 +41,7 @@ serial
 )
 
 add_executable(toad_teleop_sub src/toad_teleop_sub.cpp)
-ament_target_dependencies(toad_teleop_pub
+ament_target_dependencies(toad_teleop_sub
 rclcpp
 std_msgs
 sensor_msgs

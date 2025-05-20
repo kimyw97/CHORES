@@ -34,9 +34,9 @@ class ToadAutoDriveSub : public rclcpp::Node{
     int right_pwm = 0;
     int left_pwm = 0;
     serial::Serial serial_;
-    rclcpp::Subscription<toad_auto_drive::msg::ToadDriveMsg>::SharedPtr subscription_;
+    rclcpp::Subscription<toad_auto_drive::msg::ToadTeleopMsg>::SharedPtr subscription_;
 
-    void driveCallback(const toad_auto_drive::msg::ToadDriveMsg::SharedPtr msg){
+    void driveCallback(const toad_auto_drive::msg::ToadTeleopMsg::SharedPtr msg){
         
         right_pwm = msg->right_motor;
         left_pwm = msg->left_motor;
@@ -53,5 +53,4 @@ int main(int argc, char * argv[]){
     rclcpp::shutdown();
     return 0;
 }
-jdamr@jdamr-pc:~/ros2_ws$ 
 

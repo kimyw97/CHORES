@@ -19,7 +19,9 @@ public:
     }
 
 private:
-    rclcpp::Publisher<toad_auto_drive::msg::ToadDriveMsg>::SharedPtr pub_;
+    rclcpp::Publisher<toad_auto_drive::msg::ToadTeleopMsg>::SharedPtr pub_;
+
+
     struct termios old_tio_;
 
     void configureTerminal()
@@ -44,7 +46,7 @@ private:
         while (rclcpp::ok())
         {
             c = getchar();
-            auto msg = toad_auto_drive::msg::ToadDriveMsg();
+            auto msg = toad_auto_drive::msg::ToadTeleopMsg();
 
             if (c == 'w') {        // 앞으로
                 msg.left_motor = speed;
@@ -63,8 +65,8 @@ private:
                 msg.right_motor = -speed;
             }
             else if (c == 'x') {   // 정지
-                msg.left_motor = 0.0;
-                msg.right_motor = 0.0;
+                msg.left_motor = 0;
+                msg.right_motor = 0;
             }
             else if (c == 'q') {   // 종료
                 break;
