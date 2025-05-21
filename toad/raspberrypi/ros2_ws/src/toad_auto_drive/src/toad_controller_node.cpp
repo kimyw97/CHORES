@@ -74,16 +74,18 @@ class ToadControllerNode : public rclcpp::Node{
             middle_cnt = 0;
             edge_detect = false;
             middle_clean = false;
-            if(distance_cm > 30.0){
+            if(distance_cm > 15){
                 if(right_sensor && left_sensor){
                     go_straight();
                     std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
                     serial_.write(message);
                     RCLCPP_INFO(this->get_logger(), "쓰레기 감지, 쓰레기와의 거리 : %2.f", distance_cm);
                 }
-            }else if(distance_cm > 0 && distance_cm <= 30){
+                RCLCPP_INFO(this->get_logger(), "쓰레기 감지, 쓰레기와의 거리 : %2.f", distance_cm);
+            }else if(distance_cm > 0 && distance_cm <= 15){
                 std::string message = "L0R0";
                 serial_.write(message);
+                RCLCPP_INFO(this->get_logger(), "쓰레기 수거 중");
                 //로봇팔
                 
             }
