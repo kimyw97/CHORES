@@ -61,7 +61,7 @@ geometry_msgs
 serial
 )
 
-# 서브스크라이버 노드
+
 add_executable(auto_drive_sub_node src/toad_auto_drive_sub.cpp)
 ament_target_dependencies(auto_drive_sub_node
   rclcpp

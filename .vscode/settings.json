@@ -78,5 +78,6 @@
     "valarray": "cpp",
     "variant": "cpp"
   },
-  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/my_robot_arm_pkg/compile_commands.json"
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/my_robot_arm_pkg/compile_commands.json",
+  "cmake.sourceDirectory": "/home/kwy/kongji-patji/CHORES/cow/raspberrypi/ros2_ws/src/navigation2_custom/nav2_behaviors"
 }

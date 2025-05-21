@@ -51,7 +51,7 @@ ArmControlNode::ArmControlNode()
 
     //각 pose 이름에 대응하는 조인트 각도 설정
     joint_angles_map_ = {
-        {"pose1", {500,2050,2100,2400,2000,2000}},  // 기본위치
+        {"pose1", {500,2050,2100,2400,2000,1800}},  // 기본위치
         {"pose2", {500,1800,1900,2400,1800,2000}},  // pick 위치
         {"pose3", {600,1750,1750,2400,1800,2000}},  // pick up 위치
         {"pose4", {400,2400,1400,2400,1500,2000}},  // 이송 위치
@@ -60,8 +60,8 @@ ArmControlNode::ArmControlNode()
 
     //gripper각도 설정
     gripper_angles_map_ = {
-        {"gripper_open", {2000}},  // 그리퍼 열림
-        {"gripper_close", {1000}},  // 그리퍼 닫힘
+        {"gripper_open", {2300}},  // 그리퍼 열림
+        {"gripper_close", {500}},  // 그리퍼 닫힘
     };
             
 }
