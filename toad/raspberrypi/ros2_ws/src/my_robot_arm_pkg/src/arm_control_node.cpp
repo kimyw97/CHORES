@@ -60,8 +60,8 @@ ArmControlNode::ArmControlNode()
 
     //gripper각도 설정
     gripper_angles_map_ = {
-        {"gripper_open", {1800}},  // 그리퍼 열림
-        {"gripper_close", {1000}},  // 그리퍼 닫힘
+        {"gripper_open", {2300}},  // 그리퍼 열림
+        {"gripper_close", {500}},  // 그리퍼 닫힘
     };
             
 }
