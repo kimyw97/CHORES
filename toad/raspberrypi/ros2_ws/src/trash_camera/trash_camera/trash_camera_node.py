@@ -132,12 +132,12 @@ class TrashCameraPublisher(Node):
                     f"🟢 검지됨: {label_text} | 거리: {corrected_cm:.1f}cm"
                 )
 
-        cv2.imshow("RGB Camera", frame)
-        depth_vis = cv2.normalize(depth_image, None, 0, 255, cv2.NORM_MINMAX)
-        depth_vis = np.uint8(depth_vis)
-        depth_vis = cv2.applyColorMap(depth_vis, cv2.COLORMAP_JET)
-        cv2.imshow("ToF Depth", depth_vis)
-        cv2.waitKey(10)
+        # cv2.imshow("RGB Camera", frame)
+        # depth_vis = cv2.normalize(depth_image, None, 0, 255, cv2.NORM_MINMAX)
+        # depth_vis = np.uint8(depth_vis)
+        # depth_vis = cv2.applyColorMap(depth_vis, cv2.COLORMAP_JET)
+        # cv2.imshow("ToF Depth", depth_vis)
+        # cv2.waitKey(10)
 
 def main(args=None):
     rclpy.init(args=args)
