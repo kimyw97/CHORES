@@ -84,8 +84,8 @@ class ToadControllerNode : public rclcpp::Node{
             }else if(distance_cm > 0 && distance_cm <= 30){
                 std::string message = "L0R0";
                 serial_.write(message);
-                message = ""; // 로봇팔 각도값 입력
-                serial_.write(message);
+                //로봇팔
+                
             }
         }else{
             if (edge_detect && !middle_clean) {
