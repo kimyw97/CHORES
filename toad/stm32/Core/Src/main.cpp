@@ -161,8 +161,8 @@ extern "C" int main(void)
 	    memset(rx_buf, 0, sizeof(rx_buf));  // 버퍼 클리어
 	}
 
-//	send_infrared_feedback();
-//	HAL_Delay(1000);
+	send_infrared_feedback();
+	HAL_Delay(1000);
 
   }
   /* USER CODE END 3 */
