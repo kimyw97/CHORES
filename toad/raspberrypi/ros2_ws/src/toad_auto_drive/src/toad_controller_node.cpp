@@ -98,8 +98,10 @@ class ToadControllerNode : public rclcpp::Node{
                 RCLCPP_INFO(this->get_logger(), "모서리 발견");
                 if (!left_sensor && !right_sensor) {
                     turn_left();
+                    move();
                 } else if (left_sensor && right_sensor) {
                     go_straight();
+                    move();
                     edge_detect = false;
                     cnt++;
                     if (cnt == 4) {
@@ -108,41 +110,51 @@ class ToadControllerNode : public rclcpp::Node{
                     }
                 } else if (left_sensor && !right_sensor) {
                     turn_left();
+                    move();
                 } else if (!left_sensor && right_sensor) {
                     turn_right();
+                    move();
                 }
             } else if (!edge_detect && !middle_clean) {
                 if (left_sensor && right_sensor) {
                     go_straight();
+                    move();
                 } else if (left_sensor && !right_sensor) {
                     turn_left();
+                    move();
                 } else if (!left_sensor && right_sensor) {
                     turn_right();
+                    move();
                 } else if (!left_sensor && !right_sensor) {
                     turn_left();
+                    move();
                     edge_detect = true;
                 }
             } else if (!edge_detect && middle_clean) {
                 if (middle_cnt == 0) {
                     go_straight();
+                    move();
                     middle_cnt++;
                 } else if (middle_cnt == 1) {
                     turn_left();
+                    move();
                     middle_cnt++;
                 } else if (middle_cnt >= 2) {
                     if (left_sensor && right_sensor) {
                         go_straight();
+                        move();
                         middle_cnt++;
                     } else if (!left_sensor && !right_sensor) {
                         middle_cnt = 0;
                         middle_clean = false;
                         stop();
+                        move();
                     }
                 }
 
                 
             }
-            std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
+            
         } 
     }
 
@@ -171,6 +183,10 @@ class ToadControllerNode : public rclcpp::Node{
         right_pwm = -25;
         left_pwm = 25;
         RCLCPP_INFO(this->get_logger(), "우회전");
+    }
+
+    void move(){
+        std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
     }
 
 };
