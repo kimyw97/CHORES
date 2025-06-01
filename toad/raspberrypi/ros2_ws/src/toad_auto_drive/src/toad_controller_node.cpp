@@ -140,8 +140,9 @@ class ToadControllerNode : public rclcpp::Node{
                     }
                 }
 
-                std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
+                
             }
+            std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
         } 
     }
 
