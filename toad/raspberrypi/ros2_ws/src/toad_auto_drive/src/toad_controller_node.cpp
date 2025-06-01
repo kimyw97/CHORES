@@ -188,6 +188,7 @@ class ToadControllerNode : public rclcpp::Node{
 
     void move(){
         std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
+        serial_.write(messaeg);
         RCLCPP_INFO(this->get_logger(), "L : %d, R : %d", left_pwm, right_pwm);
     }
 
