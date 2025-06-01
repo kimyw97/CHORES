@@ -99,6 +99,7 @@ class ToadControllerNode : public rclcpp::Node{
                 if (!left_sensor && !right_sensor) {
                     turn_left();
                     move();
+                    RCLCPP_INFO(this->get_logger(), "L : %d, R : %d", left_pwm, right_pwm);
                 } else if (left_sensor && right_sensor) {
                     go_straight();
                     move();
