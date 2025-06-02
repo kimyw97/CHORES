@@ -4,7 +4,7 @@
 ../Core/Src/main.cpp:278:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	5
 ../Core/Src/main.cpp:296:6:void process_command(char*)	6
 ../Core/Src/main.cpp:337:6:void set_motor_pwm(int, int)	5
-../Core/Src/main.cpp:385:6:void send_infrared_feedback()	1
+../Core/Src/main.cpp:385:6:void send_infrared_feedback()	3
 ../Core/Src/main.cpp:401:6:void Error_Handler()	1
 ../Core/Src/main.cpp:410:1:void __static_initialization_and_destruction_0(int, int)	3
 ../Core/Src/main.cpp:410:1:cpp)	1
