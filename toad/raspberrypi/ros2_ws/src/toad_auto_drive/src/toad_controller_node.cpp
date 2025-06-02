@@ -23,7 +23,7 @@ class ToadControllerNode : public rclcpp::Node{
         );
 
         try{
-            serial_.setPort("/dev/serial0");
+            serial_.setPort("/dev/ttyUSB0");
             serial_.setBaudrate(115200);
             serial::Timeout to = serial::Timeout::simpleTimeout(1000);
             serial_.setTimeout(to);
@@ -68,24 +68,28 @@ class ToadControllerNode : public rclcpp::Node{
     }
     
     void controller(){
-
+	    if(is_trash){
+	    if(distance_cm > 0 && distance_cm < 30){
+		    RCLCPP_INFO(this->get_logger(), "쓰레기 수거중");
+	    }else if(distance_cm > 30){
+		    RCLCPP_INFO(this->get_logger(), "쓰레기에게 이동중 남은 거리 %.2fcm", distance_cm);
+	    }
+	    }
         if(is_trash){
             cnt = 0;
             middle_cnt = 0;
             edge_detect = false;
             middle_clean = false;
-            if(distance_cm > 15){
+            if(distance_cm > 30.0){
                 if(right_sensor && left_sensor){
                     go_straight();
                     std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
                     serial_.write(message);
                     RCLCPP_INFO(this->get_logger(), "쓰레기 감지, 쓰레기와의 거리 : %2.f", distance_cm);
                 }
-                RCLCPP_INFO(this->get_logger(), "쓰레기 감지, 쓰레기와의 거리 : %2.f", distance_cm);
-            }else if(distance_cm > 0 && distance_cm <= 15){
+            }else if(distance_cm > 0 && distance_cm <= 30){
                 std::string message = "L0R0";
                 serial_.write(message);
-                RCLCPP_INFO(this->get_logger(), "쓰레기 수거 중");
                 //로봇팔
                 
             }
