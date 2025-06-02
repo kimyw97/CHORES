@@ -199,7 +199,9 @@ int main(int argc, char * argv[]){
     rclcpp::spin(std::make_shared<ToadControllerNode>());
     rclcpp::shutdown();
     serial::Serial serial_;
-    serial_.write("L0R0\n");
+    std::string message = "L0R0\n";
+
+    serial_.write(message);
     serial_.close();
     return 0;
 }
