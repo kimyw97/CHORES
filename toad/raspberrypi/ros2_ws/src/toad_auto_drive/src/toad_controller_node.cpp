@@ -198,5 +198,8 @@ int main(int argc, char * argv[]){
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<ToadControllerNode>());
     rclcpp::shutdown();
+    serial::Serial serial_;
+    serial_.write("L0R0\n");
+    serial_.close();
     return 0;
 }
