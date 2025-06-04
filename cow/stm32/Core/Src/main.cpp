@@ -1147,13 +1147,13 @@ void vSystemMonitorTask(void *argument) {
 				(xEventGroupGetBits(emegencyEventGroup) & EmergencyOccure) ?
 						1 : 0;
 
-		AccelRawData acc = MPU9250_ReadAccel(&hi2c1);
+		ImuRawData imu = MPU9250_ReadImu(&hi2c1);
 
 		snprintf(tx_buffer, sizeof(tx_buffer),
-		    "SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%d,R%d;ACC:%d,%d,%d\n",
+		    "SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%d,R%d;ACC:%d,%d,%d,GYRO:%d,%d,%d\n",
 		    current_left_pwm, current_right_pwm, trash_state,
 		    emergency_state, left_encoder, right_encoder,
-		    acc.ax, acc.ay, acc.az);
+			imu.ax, imu.ay, imu.az, imu.gx, imu.gy, imu.gz);
 
 		HAL_UART_Transmit(&huart5, (uint8_t*) tx_buffer, strlen(tx_buffer),
 				HAL_MAX_DELAY);

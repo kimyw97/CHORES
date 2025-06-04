@@ -7,3 +7,6 @@ int32 right_encoder
 int16 acc_x
 int16 acc_y
 int16 acc_z
+int16 gyro_x
+int16 gyro_y
+int16 gyro_z

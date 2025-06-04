@@ -30,7 +30,8 @@ private:
     if (ch == '\n') {
       RCLCPP_INFO(this->get_logger(), "Raw line: '%s'", buffer_.c_str());
 
-      std::regex regex("SPEED:L(-?\\d+),R(-?\\d+);TRASH:(\\d);EMERGENCY:(\\d);ENCODER:L(-?\\d+),R(-?\\d+);ACC:(-?\\d+),(-?\\d+),(-?\\d+)");
+      // ACC:x,y,z,GYRO:x,y,z 형식 대응 정규표현식
+      std::regex regex("SPEED:L(-?\\d+),R(-?\\d+);TRASH:(\\d);EMERGENCY:(\\d);ENCODER:L(-?\\d+),R(-?\\d+);ACC:(-?\\d+),(-?\\d+),(-?\\d+),GYRO:(-?\\d+),(-?\\d+),(-?\\d+)");
       std::smatch match;
 
       if (std::regex_search(buffer_, match, regex)) {
@@ -44,9 +45,12 @@ private:
         msg.acc_x = std::stoi(match[7]);
         msg.acc_y = std::stoi(match[8]);
         msg.acc_z = std::stoi(match[9]);
+        msg.gyro_x = std::stoi(match[10]);
+        msg.gyro_y = std::stoi(match[11]);
+        msg.gyro_z = std::stoi(match[12]);
 
         status_pub_->publish(msg);
-        RCLCPP_INFO(this->get_logger(), "Published robot status with accelerometer.");
+        RCLCPP_INFO(this->get_logger(), "Published robot status with accel and gyro.");
       } else {
         RCLCPP_WARN(this->get_logger(), "Regex match failed for line: '%s'", buffer_.c_str());
       }

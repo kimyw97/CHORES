@@ -11,12 +11,11 @@
 
 #define MPU9250_ADDR 0x68 << 1
 typedef struct {
-	int16_t ax;
-	int16_t ay;
-	int16_t az;
-} AccelRawData;
+    int16_t ax, ay, az;  // 가속도
+    int16_t gx, gy, gz;  // 자이로
+} ImuRawData;
 
 void MPU9250_Init(I2C_HandleTypeDef *hi2c);
-AccelRawData MPU9250_ReadAccel(I2C_HandleTypeDef *hi2c);
+ImuRawData MPU9250_ReadImu(I2C_HandleTypeDef *hi2c);
 
 #endif /* INC_MPU9250_H_ */

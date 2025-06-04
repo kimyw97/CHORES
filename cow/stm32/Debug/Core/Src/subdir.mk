@@ -10,7 +10,8 @@ CPP_SRCS += \
 ../Core/Src/SCSerial.cpp \
 ../Core/Src/SMS_STS.cpp \
 ../Core/Src/jh_servo_control.cpp \
-../Core/Src/main.cpp 
+../Core/Src/main.cpp \
+../Core/Src/mpu9250.cpp 
 
 C_SRCS += \
 ../Core/Src/delay_us.c \
@@ -43,6 +44,7 @@ OBJS += \
 ./Core/Src/freertos.o \
 ./Core/Src/jh_servo_control.o \
 ./Core/Src/main.o \
+./Core/Src/mpu9250.o \
 ./Core/Src/servo.o \
 ./Core/Src/stm32f4xx_hal_msp.o \
 ./Core/Src/stm32f4xx_hal_timebase_tim.o \
@@ -57,7 +59,8 @@ CPP_DEPS += \
 ./Core/Src/SCSerial.d \
 ./Core/Src/SMS_STS.d \
 ./Core/Src/jh_servo_control.d \
-./Core/Src/main.d 
+./Core/Src/main.d \
+./Core/Src/mpu9250.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -69,7 +72,7 @@ Core/Src/%.o Core/Src/%.su Core/Src/%.cyclo: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/SCS.cyclo ./Core/Src/SCS.d ./Core/Src/SCS.o ./Core/Src/SCS.su ./Core/Src/SCSCL.cyclo ./Core/Src/SCSCL.d ./Core/Src/SCSCL.o ./Core/Src/SCSCL.su ./Core/Src/SCSerial.cyclo ./Core/Src/SCSerial.d ./Core/Src/SCSerial.o ./Core/Src/SCSerial.su ./Core/Src/SMS_STS.cyclo ./Core/Src/SMS_STS.d ./Core/Src/SMS_STS.o ./Core/Src/SMS_STS.su ./Core/Src/delay_us.cyclo ./Core/Src/delay_us.d ./Core/Src/delay_us.o ./Core/Src/delay_us.su ./Core/Src/freertos.cyclo ./Core/Src/freertos.d ./Core/Src/freertos.o ./Core/Src/freertos.su ./Core/Src/jh_servo_control.cyclo ./Core/Src/jh_servo_control.d ./Core/Src/jh_servo_control.o ./Core/Src/jh_servo_control.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/servo.cyclo ./Core/Src/servo.d ./Core/Src/servo.o ./Core/Src/servo.su ./Core/Src/stm32f4xx_hal_msp.cyclo ./Core/Src/stm32f4xx_hal_msp.d ./Core/Src/stm32f4xx_hal_msp.o ./Core/Src/stm32f4xx_hal_msp.su ./Core/Src/stm32f4xx_hal_timebase_tim.cyclo ./Core/Src/stm32f4xx_hal_timebase_tim.d ./Core/Src/stm32f4xx_hal_timebase_tim.o ./Core/Src/stm32f4xx_hal_timebase_tim.su ./Core/Src/stm32f4xx_it.cyclo ./Core/Src/stm32f4xx_it.d ./Core/Src/stm32f4xx_it.o ./Core/Src/stm32f4xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32f4xx.cyclo ./Core/Src/system_stm32f4xx.d ./Core/Src/system_stm32f4xx.o ./Core/Src/system_stm32f4xx.su
+	-$(RM) ./Core/Src/SCS.cyclo ./Core/Src/SCS.d ./Core/Src/SCS.o ./Core/Src/SCS.su ./Core/Src/SCSCL.cyclo ./Core/Src/SCSCL.d ./Core/Src/SCSCL.o ./Core/Src/SCSCL.su ./Core/Src/SCSerial.cyclo ./Core/Src/SCSerial.d ./Core/Src/SCSerial.o ./Core/Src/SCSerial.su ./Core/Src/SMS_STS.cyclo ./Core/Src/SMS_STS.d ./Core/Src/SMS_STS.o ./Core/Src/SMS_STS.su ./Core/Src/delay_us.cyclo ./Core/Src/delay_us.d ./Core/Src/delay_us.o ./Core/Src/delay_us.su ./Core/Src/freertos.cyclo ./Core/Src/freertos.d ./Core/Src/freertos.o ./Core/Src/freertos.su ./Core/Src/jh_servo_control.cyclo ./Core/Src/jh_servo_control.d ./Core/Src/jh_servo_control.o ./Core/Src/jh_servo_control.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/mpu9250.cyclo ./Core/Src/mpu9250.d ./Core/Src/mpu9250.o ./Core/Src/mpu9250.su ./Core/Src/servo.cyclo ./Core/Src/servo.d ./Core/Src/servo.o ./Core/Src/servo.su ./Core/Src/stm32f4xx_hal_msp.cyclo ./Core/Src/stm32f4xx_hal_msp.d ./Core/Src/stm32f4xx_hal_msp.o ./Core/Src/stm32f4xx_hal_msp.su ./Core/Src/stm32f4xx_hal_timebase_tim.cyclo ./Core/Src/stm32f4xx_hal_timebase_tim.d ./Core/Src/stm32f4xx_hal_timebase_tim.o ./Core/Src/stm32f4xx_hal_timebase_tim.su ./Core/Src/stm32f4xx_it.cyclo ./Core/Src/stm32f4xx_it.d ./Core/Src/stm32f4xx_it.o ./Core/Src/stm32f4xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32f4xx.cyclo ./Core/Src/system_stm32f4xx.d ./Core/Src/system_stm32f4xx.o ./Core/Src/system_stm32f4xx.su
 
 .PHONY: clean-Core-2f-Src
 

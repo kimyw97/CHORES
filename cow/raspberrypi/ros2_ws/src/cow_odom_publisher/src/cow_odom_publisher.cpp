@@ -2,6 +2,7 @@
 #include "robot_monitoring/msg/robot_status.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
+#include "sensor_msgs/msg/imu.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include <cmath>
@@ -15,6 +16,7 @@ public:
   {
     odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
     joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+    imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
 
     sub_ = this->create_subscription<robot_monitoring::msg::RobotStatus>(
       "robot_status", 10,
@@ -22,7 +24,7 @@ public:
     );
 
     last_time_ = this->now();
-    RCLCPP_INFO(this->get_logger(), "Odometry publisher started (TF removed, joint_states added).");
+    RCLCPP_INFO(this->get_logger(), "Odometry + IMU publisher started.");
   }
 
 private:
@@ -67,7 +69,7 @@ private:
     q.setRPY(0, 0, th_);
     q.normalize();
 
-    // Publish Odometry
+    // Odometry 메시지 발행
     nav_msgs::msg::Odometry odom;
     odom.header.stamp = current_time;
     odom.header.frame_id = "odom";
@@ -77,46 +79,62 @@ private:
     odom.pose.pose.orientation = tf2::toMsg(q);
     odom.twist.twist.linear.x = d_center / dt;
     odom.twist.twist.angular.z = d_theta / dt;
-    for (int i = 0; i < 36; ++i) {
-      odom.pose.covariance[i] = 0.0;
-      odom.twist.covariance[i] = 0.0;
-    }
-    odom.pose.covariance[0] = 0.01;   // x
-    odom.pose.covariance[7] = 0.01;   // y
-    odom.pose.covariance[35] = 0.05;  // yaw
-
-    odom.twist.covariance[0] = 0.01;  // vx
-    odom.twist.covariance[35] = 0.05; // vyaw
+    odom.pose.covariance[0] = 0.01;
+    odom.pose.covariance[7] = 0.01;
+    odom.pose.covariance[35] = 0.05;
+    odom.twist.covariance[0] = 0.01;
+    odom.twist.covariance[35] = 0.05;
     odom_pub_->publish(odom);
 
-    // Publish JointState (include fixed joints too)
+    // JointState 메시지 발행
     double left_angle = left_ticks * (2.0 * M_PI / TICKS_PER_REV);
     double right_angle = right_ticks * (2.0 * M_PI / TICKS_PER_REV);
-
     sensor_msgs::msg::JointState joint_state;
     joint_state.header.stamp = current_time;
     joint_state.name = {
-      "left_wheel_joint",
-      "right_wheel_joint",
-      "base_footprint_to_base_link",
-      "base_link_to_laser"
+      "left_wheel_joint", "right_wheel_joint",
+      "base_footprint_to_base_link", "base_link_to_laser"
     };
-    joint_state.position = {
-      left_angle,
-      right_angle,
-      0.0,  // fixed joint
-      0.0   // fixed joint
-    };
+    joint_state.position = {left_angle, right_angle, 0.0, 0.0};
     joint_pub_->publish(joint_state);
 
-    // Logging
+    // IMU 메시지 발행 (가속도 + 자이로)
+    sensor_msgs::msg::Imu imu;
+    imu.header.stamp = current_time;
+    imu.header.frame_id = "base_footprint";
+
+    // 가속도 단위 변환 (m/s²) - ±2g 기준
+    double acc_scale = 9.81 / 16384.0;
+    imu.linear_acceleration.x = msg->acc_x * acc_scale;
+    imu.linear_acceleration.y = msg->acc_y * acc_scale;
+    imu.linear_acceleration.z = msg->acc_z * acc_scale;
+
+    // 자이로 단위 변환 (rad/s) - ±250°/s 기준
+    double gyro_scale = (M_PI / 180.0) / 131.0;
+    imu.angular_velocity.x = msg->gyro_x * gyro_scale;
+    imu.angular_velocity.y = msg->gyro_y * gyro_scale;
+    imu.angular_velocity.z = msg->gyro_z * gyro_scale;
+
+    // Orientation은 제공하지 않음 (EKF가 추정)
+    imu.orientation_covariance[0] = -1.0;
+
+    imu_pub_->publish(imu);
+
+    // 로그 출력
     RCLCPP_INFO(this->get_logger(),
-      "x: %.3f, y: %.3f, th: %.3f | L_angle: %.2f rad, R_angle: %.2f rad",
-      x_, y_, th_, left_angle, right_angle);
+      "x: %.3f, y: %.3f, th: %.3f | ACC[%.2f %.2f %.2f] | GYRO[%.2f %.2f %.2f]",
+      x_, y_, th_,
+      imu.linear_acceleration.x,
+      imu.linear_acceleration.y,
+      imu.linear_acceleration.z,
+      imu.angular_velocity.x,
+      imu.angular_velocity.y,
+      imu.angular_velocity.z);
   }
 
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
   rclcpp::Subscription<robot_monitoring::msg::RobotStatus>::SharedPtr sub_;
 
   rclcpp::Time last_time_;
