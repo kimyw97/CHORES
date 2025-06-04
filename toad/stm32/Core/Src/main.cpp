@@ -350,7 +350,7 @@ void set_motor_pwm(int left, int right)
         // 후진
         HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In1_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In2_Pin, GPIO_PIN_SET);
-    } else {
+    } else if(left == 0) {
         // 정지→Coast
         HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In1_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In2_Pin, GPIO_PIN_RESET);
@@ -365,7 +365,7 @@ void set_motor_pwm(int left, int right)
         // 후진
         HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In1_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In2_Pin, GPIO_PIN_SET);
-    } else {
+    } else if(right == 0){
         // 정지→Coast
         HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In1_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In2_Pin, GPIO_PIN_RESET);
