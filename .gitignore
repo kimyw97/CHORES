@@ -17,7 +17,7 @@
 *.launch
 
 # Build folders
-/Debug/
+**/Debug/
 /Release/
 /build/
 /Build/
