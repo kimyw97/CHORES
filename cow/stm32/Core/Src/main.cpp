@@ -944,8 +944,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			rx_index = 0;  // 버퍼 초기화
 		} else {
 			if (rx_index < CMD_BUFFER_SIZE - 1) {
-			} else {
 				rx_cmd_buffer[rx_index++] = rx_data;
+			} else {
 				rx_index = 0;  // overflow 방지
 			}
 		}
