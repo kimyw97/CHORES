@@ -23,7 +23,7 @@ class ToadControllerNode : public rclcpp::Node{
         );
 
         try{
-            serial_.setPort("/dev/serial0");
+            serial_.setPort("/dev/ttyUSB0");
             serial_.setBaudrate(115200);
             serial::Timeout to = serial::Timeout::simpleTimeout(1000);
             serial_.setTimeout(to);
@@ -68,7 +68,13 @@ class ToadControllerNode : public rclcpp::Node{
     }
     
     void controller(){
-
+	    if(is_trash){
+	    if(distance_cm > 0 && distance_cm < 30){
+		    RCLCPP_INFO(this->get_logger(), "쓰레기 수거중");
+	    }else if(distance_cm > 30){
+		    RCLCPP_INFO(this->get_logger(), "쓰레기에게 이동중 남은 거리 %.2fcm", distance_cm);
+	    }
+	    }
         if(is_trash){
             cnt = 0;
             middle_cnt = 0;
@@ -92,8 +98,11 @@ class ToadControllerNode : public rclcpp::Node{
                 RCLCPP_INFO(this->get_logger(), "모서리 발견");
                 if (!left_sensor && !right_sensor) {
                     turn_left();
+                    move();
+                    
                 } else if (left_sensor && right_sensor) {
                     go_straight();
+                    move();
                     edge_detect = false;
                     cnt++;
                     if (cnt == 4) {
@@ -102,40 +111,51 @@ class ToadControllerNode : public rclcpp::Node{
                     }
                 } else if (left_sensor && !right_sensor) {
                     turn_left();
+                    move();
                 } else if (!left_sensor && right_sensor) {
                     turn_right();
+                    move();
                 }
             } else if (!edge_detect && !middle_clean) {
                 if (left_sensor && right_sensor) {
                     go_straight();
+                    move();
                 } else if (left_sensor && !right_sensor) {
                     turn_left();
+                    move();
                 } else if (!left_sensor && right_sensor) {
                     turn_right();
+                    move();
                 } else if (!left_sensor && !right_sensor) {
                     turn_left();
+                    move();
                     edge_detect = true;
                 }
             } else if (!edge_detect && middle_clean) {
                 if (middle_cnt == 0) {
                     go_straight();
+                    move();
                     middle_cnt++;
                 } else if (middle_cnt == 1) {
                     turn_left();
+                    move();
                     middle_cnt++;
                 } else if (middle_cnt >= 2) {
                     if (left_sensor && right_sensor) {
                         go_straight();
+                        move();
                         middle_cnt++;
                     } else if (!left_sensor && !right_sensor) {
                         middle_cnt = 0;
                         middle_clean = false;
                         stop();
+                        move();
                     }
                 }
 
-                std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
+                
             }
+            
         } 
     }
 
@@ -166,11 +186,22 @@ class ToadControllerNode : public rclcpp::Node{
         RCLCPP_INFO(this->get_logger(), "우회전");
     }
 
+    void move(){
+        std::string message = "L" + std::to_string(left_pwm) + "R" + std::to_string(right_pwm) + "\n";
+        serial_.write(message);
+        RCLCPP_INFO(this->get_logger(), "L : %d, R : %d", left_pwm, right_pwm);
+    }
+
 };
 
 int main(int argc, char * argv[]){
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<ToadControllerNode>());
     rclcpp::shutdown();
+    serial::Serial serial_;
+    std::string message = "L0R0\n";
+
+    serial_.write(message);
+    serial_.close();
     return 0;
 }

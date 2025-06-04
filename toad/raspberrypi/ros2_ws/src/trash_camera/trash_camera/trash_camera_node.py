@@ -30,7 +30,7 @@ class TrashCameraPublisher(Node):
         super().__init__('trash_camera_node')
 
         self.trash_pub = self.create_publisher(TrashInfo, 'trash_info', 10)
-        self.model = YOLO('/home/jdamr/Downloads/best.pt')
+        self.model = YOLO('best.pt')
 
         self.tof = ac.ArducamCamera()
         if self.tof.open(Connection.CSI, 0) != 0:
@@ -57,12 +57,31 @@ class TrashCameraPublisher(Node):
     def get_valid_depth(self):
         for _ in range(5):
             frame = self.tof.requestFrame(2000)
+            
             if frame and isinstance(frame, ac.DepthData):
                 if frame.confidence_data is not None and frame.depth_data is not None:
                     return frame
+                print("Type of frame:", type(frame))
+                print("Frame:", frame)
             time.sleep(0.1)
+            
         self.get_logger().warn("⚠️ depth frame 획득 실패")
         return None
+
+    # def get_valid_depth(self):
+    #     for i in range(10):
+    #         frame = self.tof.requestFrame(FrameType.DEPTH)
+    #         if not frame:
+    #             self.get_logger().warn(f"[{i}] ⚠️ frame is None")
+    #         elif not (hasattr(frame, "depth_data") and hasattr(frame, "confidence_data")):
+    #             self.get_logger().warn(f"[{i}] ⚠️ frame lacks expected attributes: {type(frame)}")
+    #         elif frame.confidence_data is None or frame.depth_data is None:
+    #             self.get_logger().warn(f"[{i}] ⚠️ depth or confidence data is None")
+    #         else:
+    #             return frame
+    #         time.sleep(0.1)
+    #     return None
+
 
     def process_frame(self):
         ret, frame = self.cap.read()

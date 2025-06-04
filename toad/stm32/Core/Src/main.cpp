@@ -161,8 +161,8 @@ extern "C" int main(void)
 	    memset(rx_buf, 0, sizeof(rx_buf));  // 버퍼 클리어
 	}
 
-//	send_infrared_feedback();
-//	HAL_Delay(1000);
+	send_infrared_feedback();
+	HAL_Delay(1000);
 
   }
   /* USER CODE END 3 */
@@ -386,7 +386,7 @@ void send_infrared_feedback() {
     uint8_t s1 = HAL_GPIO_ReadPin(GPIOC, Front_Infrared1);
     uint8_t s2 = HAL_GPIO_ReadPin(GPIOC, Front_Infrared2);
     char msg[32];
-    sprintf(msg, "s1%ds2%d\n", s1 == GPIO_PIN_RESET ? 0 : 1, s2 == GPIO_PIN_RESET ? 0 : 1);
+    sprintf(msg, "s1%ds2%d\n", s1 == GPIO_PIN_RESET ? 1 : 0, s2 == GPIO_PIN_RESET ? 1 : 0);
     HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
 }

@@ -38,8 +38,10 @@ void keyLoop()
         {'3', "pose3"},
         {'4', "pose4"},
         {'5', "pose5"},
-        {'6', "gripper_open"},
-        {'7', "gripper_close"},
+	{'6', "pose6"},
+        {'7', "gripper_open"},
+        {'8', "gripper_close"},
+	{'9', "gripper_catch"},
     };
 
     if (key_map.find(c) != key_map.end())
