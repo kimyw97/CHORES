@@ -30,7 +30,7 @@ public:
         10,
         std::bind(&DriveByIRActionServer::isTrashCallback, this, std::placeholders::_1));
 
-    openSerial("/dev/ttyUSB0", B9600);
+    openSerial("/dev/ttyUSB0", B115200);
   }
 
 private:
@@ -108,6 +108,7 @@ private:
       if (first != std::string::npos && second != std::string::npos && second + 2 < data.size()) {
         int left = data[first + 1] - '0';
         int right = data[second + 1] - '0';
+        RCLCPP_INFO(this->get_logger(), "recive s1%ds2%d", left, right);
         return {left, right};
       }
     }
