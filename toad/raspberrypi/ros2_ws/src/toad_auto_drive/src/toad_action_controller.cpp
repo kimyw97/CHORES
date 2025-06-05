@@ -139,11 +139,10 @@ private:
     } else if (left_ir == 0 && right_ir == 1) {
       RCLCPP_INFO(this->get_logger(), "Turn Left");
       cmd = "L-30R30\n";
-    } /*else {
-      RCLCPP_INFO(this->get_logger(), "stop!!!!!");
-      cmd = "L0R0\n";
+    } else {
+      stop();
     }
-*/
+
     writeSerial(cmd);
   }
 
