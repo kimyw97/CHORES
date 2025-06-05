@@ -133,16 +133,14 @@ private:
     if (left_ir == 1 && right_ir == 1) {
       RCLCPP_INFO(this->get_logger(), "Go Forward");
       cmd = "L30R30\n";
-    } else if (left_ir == 0 && right_ir == 0) {
-      RCLCPP_INFO(this->get_logger(), "Stop!!");
-      cmd = "L0R0\n";
-    } else if (left_ir == 1 && right_ir == 0) {
+    }  else if (left_ir == 1 && right_ir == 0) {
       RCLCPP_INFO(this->get_logger(), "Turn Right");
       cmd = "L30R0\n";
     } else if (left_ir == 0 && right_ir == 1) {
       RCLCPP_INFO(this->get_logger(), "Turn Left");
       cmd = "L0R30\n";
     } else {
+      RCLCPP_INFO(this->get_logger(), "stop!!!!!");
       cmd = "L0R0\n";
     }
 
