@@ -139,7 +139,7 @@ private:
     } else if (left_ir == 0 && right_ir == 1) {
       RCLCPP_INFO(this->get_logger(), "Turn Left");
       cmd = "L-30R30\n";
-    } else {
+    } else if(left_ir == 0 && right_ir == 0) {
       stop();
     }
 
