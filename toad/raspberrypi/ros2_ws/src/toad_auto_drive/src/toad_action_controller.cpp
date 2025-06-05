@@ -91,7 +91,7 @@ private:
       feedback->status = "IR values: L=" + std::to_string(left_ir) + ", R=" + std::to_string(right_ir);
       goal_handle->publish_feedback(feedback);
 
-      rclcpp::sleep_for(std::chrono::milliseconds(2000));
+      rclcpp::sleep_for(std::chrono::milliseconds(200));
     }
 
     if (goal_handle->is_canceling()) {
