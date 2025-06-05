@@ -47,6 +47,8 @@ geometry_msgs
 serial
 )
 
+
+
 add_executable(test_trash src/test_trash.cpp)
 ament_target_dependencies(test_trash
 rclcpp
@@ -83,6 +85,16 @@ ament_target_dependencies(action_drive
 )
 
 
+
+add_executable(toad_action_client src/toad_action_client.cpp)
+ament_target_dependencies(toad_action_client
+  rclcpp
+  rclcpp_action
+  std_msgs
+  geometry_msgs
+  serial
+	sensor_msgs
+)
 
 
 add_executable(auto_drive_sub_node src/toad_auto_drive_sub.cpp)
@@ -123,6 +135,10 @@ target_link_libraries(toad_controller_node
 	${TYPESUPPORT_TARGET}
 	)
 
+  target_link_libraries(toad_action_client
+	${TYPESUPPORT_TARGET}
+	)
+
 # 설치 지시
 install(
   TARGETS
@@ -133,6 +149,7 @@ install(
     toad_controller_node
     action_drive
     test_trash
+    toad_action_client
   DESTINATION lib/${PROJECT_NAME}
 )
 
