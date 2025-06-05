@@ -1,6 +1,5 @@
 # @format
 
-# config/ekf_filter_node.yaml
 ekf_filter_node:
   ros__parameters:
     frequency: 30.0
@@ -9,16 +8,16 @@ ekf_filter_node:
     # 프레임 설정
     base_link_frame: base_footprint
     odom_frame: odom
-    world_frame: map # map 대신 odom을 world 기준으로 사용
+    world_frame: map # odom 또는 map 중 TF 트리 기준 선택
     publish_tf: true
-    map_frame: map # 사용하지 않지만 필수 파라미터
+    map_frame: map # 필수 파라미터
 
     two_d_mode: true
     transform_time_offset: 0.0
     print_diagnostics: true
     use_control: false
 
-    # -------------------------------
+    # ---------------------------------------
     # 오도메트리 센서 설정 (wheel encoder 기반)
     odom0: odom
     odom0_config: [
@@ -41,8 +40,8 @@ ekf_filter_node:
     odom0_differential: false
     odom0_relative: false
 
-    # -------------------------------
-    # IMU 센서 설정 (가속도계 + 자이로)
+    # ---------------------------------------
+    # IMU 센서 설정 (가속도계 + 자이로 + 방향)
     imu0: imu/data
     imu0_config: [
         false,
@@ -50,17 +49,17 @@ ekf_filter_node:
         false, # x, y, z (IMU는 위치 제공 안함)
         true,
         true,
-        true, # roll, pitch, yaw (자세를 추정에 사용)
+        true, # roll, pitch, yaw (orientation quaternion 사용)
         false,
         false,
         false, # vx, vy, vz
         true,
         true,
-        true, # vroll, vpitch, vyaw (자이로 사용)
+        true, # vroll, vpitch, vyaw (gyro 사용)
         true,
         true,
-        true, # ax, ay, az (가속도 사용)
+        true, # ax, ay, az (acc 사용)
       ]
     imu0_differential: false
     imu0_relative: false
-    imu0_remove_gravitational_acceleration: true
+    imu0_remove_gravitational_acceleration: false # STM32에서 중력 제거 안 했을 경우
