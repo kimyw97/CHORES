@@ -1,8 +1,8 @@
+#include "nav_msgs/msg/odometry.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "robot_monitoring/msg/robot_status.hpp"
-#include "nav_msgs/msg/odometry.hpp"
-#include "sensor_msgs/msg/joint_state.hpp"
 #include "sensor_msgs/msg/imu.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include <cmath>
@@ -10,18 +10,17 @@
 class OdomFromStatusNode : public rclcpp::Node {
 public:
   OdomFromStatusNode()
-  : Node("cow_odom_publisher"),
-    x_(0.0), y_(0.0), th_(0.0),
-    last_left_ticks_(0), last_right_ticks_(0), first_reading_(true)
-  {
+      : Node("cow_odom_publisher"), x_(0.0), y_(0.0), th_(0.0),
+        last_left_ticks_(0), last_right_ticks_(0), first_reading_(true) {
     odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
-    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>(
+        "joint_states", 10);
     imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
 
     sub_ = this->create_subscription<robot_monitoring::msg::RobotStatus>(
-      "robot_status", 10,
-      std::bind(&OdomFromStatusNode::statusCallback, this, std::placeholders::_1)
-    );
+        "robot_status", 10,
+        std::bind(&OdomFromStatusNode::statusCallback, this,
+                  std::placeholders::_1));
 
     last_time_ = this->now();
     RCLCPP_INFO(this->get_logger(), "Odometry + IMU publisher started.");
@@ -91,14 +90,12 @@ private:
     double right_angle = right_ticks * (2.0 * M_PI / TICKS_PER_REV);
     sensor_msgs::msg::JointState joint_state;
     joint_state.header.stamp = current_time;
-    joint_state.name = {
-      "left_wheel_joint", "right_wheel_joint",
-      "base_footprint_to_base_link", "base_link_to_laser"
-    };
+    joint_state.name = {"left_wheel_joint", "right_wheel_joint",
+                        "base_footprint_to_base_link", "base_link_to_laser"};
     joint_state.position = {left_angle, right_angle, 0.0, 0.0};
     joint_pub_->publish(joint_state);
 
-    // IMU 메시지 발행 (가속도 + 자이로)
+    // IMU 메시지 발행
     sensor_msgs::msg::Imu imu;
     imu.header.stamp = current_time;
     imu.header.frame_id = "base_footprint";
@@ -115,21 +112,27 @@ private:
     imu.angular_velocity.y = msg->gyro_y * gyro_scale;
     imu.angular_velocity.z = msg->gyro_z * gyro_scale;
 
-    // Orientation은 제공하지 않음 (EKF가 추정)
-    imu.orientation_covariance[0] = -1.0;
+    // Roll, Pitch, Yaw → Quaternion
+    tf2::Quaternion imu_q;
+    imu_q.setRPY(msg->ori_roll, msg->ori_pitch, msg->ori_yaw);
+    imu_q.normalize();
+    imu.orientation = tf2::toMsg(imu_q);
+
+    // Orientation covariance 설정
+    imu.orientation_covariance[0] = 0.02;
+    imu.orientation_covariance[4] = 0.02;
+    imu.orientation_covariance[8] = 0.05;
 
     imu_pub_->publish(imu);
 
     // 로그 출력
     RCLCPP_INFO(this->get_logger(),
-      "x: %.3f, y: %.3f, th: %.3f | ACC[%.2f %.2f %.2f] | GYRO[%.2f %.2f %.2f]",
-      x_, y_, th_,
-      imu.linear_acceleration.x,
-      imu.linear_acceleration.y,
-      imu.linear_acceleration.z,
-      imu.angular_velocity.x,
-      imu.angular_velocity.y,
-      imu.angular_velocity.z);
+                "x: %.3f, y: %.3f, th: %.3f | ACC[%.2f %.2f %.2f] | GYRO[%.2f "
+                "%.2f %.2f] | YAW: %.2f",
+                x_, y_, th_, imu.linear_acceleration.x,
+                imu.linear_acceleration.y, imu.linear_acceleration.z,
+                imu.angular_velocity.x, imu.angular_velocity.y,
+                imu.angular_velocity.z, msg->ori_yaw);
   }
 
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;

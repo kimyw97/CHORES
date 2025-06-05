@@ -45,6 +45,13 @@ typedef enum {
 	ROTATE_LEFT,  // 왼 방향 제자리 회전
 	STOP
 } DriveMode;
+typedef struct {
+	int16_t ax, ay, az;
+	int16_t gx, gy, gz;
+	int16_t mx, my, mz;
+	float temperature;
+	float pitch, roll, yaw; // 추가
+} ImuRawData;
 
 /* USER CODE END PTD */
 
@@ -98,11 +105,14 @@ const osThreadAttr_t LiftControlTask_attributes = { .name = "LiftControlTask",
 /* Definitions for SystemMonitorTa */
 osThreadId_t SystemMonitorTaHandle;
 const osThreadAttr_t SystemMonitorTa_attributes = { .name = "SystemMonitorTa",
-		.stack_size = 128 * 4, .priority = (osPriority_t) osPriorityLow, };
+		.stack_size = 128 * 8, .priority = (osPriority_t) osPriorityLow, };
 /* Definitions for EmergencyTask */
 osThreadId_t EmergencyTaskHandle;
 const osThreadAttr_t EmergencyTask_attributes = { .name = "EmergencyTask",
 		.stack_size = 128 * 4, .priority = (osPriority_t) osPriorityLow, };
+/* Definitions for imuMutex */
+osSemaphoreId_t imuMutexHandle;
+const osSemaphoreAttr_t imuMutex_attributes = { .name = "imuMutex" };
 /* Definitions for Emergency */
 osEventFlagsId_t EmergencyHandle;
 const osEventFlagsAttr_t Emergency_attributes = { .name = "Emergency" };
@@ -159,6 +169,8 @@ int32_t readEncoder(TIM_HandleTypeDef *htim);
 int16_t calRPM(char method, int8_t MT, int16_t encoder_count, float time,
 		int8_t PPR, int8_t ratio);
 
+MPU9250 imu(&hi2c1);
+ImuRawData sharedImuData;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -220,10 +232,6 @@ int main(void) {
 
 	right_encoder_prev_count = __HAL_TIM_GET_COUNTER(&htim2);
 	right_encoder_total_count = 0;
-	int8_t target_distance_cm = 100;
-	int8_t PPR = 11;
-	int8_t GEAR_RATIO = 30;
-	float WHEEL_CIRCUMFERENCE_CM = 2 * 3.1415 * 3.5;
 	HAL_UART_Receive_IT(&huart5, &rx_data, 1);
 	servo.begin(&huart4);
 	osDelay(20);
@@ -232,7 +240,16 @@ int main(void) {
 	u16 timeList[2] = { 0, 0 };              // 이동 시간
 	u16 speedList[2] = { 100, 100 };         // 이동 속도
 	servo.SyncWritePos(idList, 2, posList, timeList, speedList);
-	MPU9250_Init(&hi2c1);
+	imu.initMPU9250();
+	float magCal[3];
+	imu.initAK8963(magCal);
+
+	float gyroBias[3], accelBias[3];
+	imu.calibrateMPU9250(gyroBias, accelBias);
+
+	imu.getAres();
+	imu.getGres();
+	imu.getMres();
 	/* USER CODE END 2 */
 
 	/* Init scheduler */
@@ -243,7 +260,8 @@ int main(void) {
 	/* USER CODE END RTOS_MUTEX */
 
 	/* USER CODE BEGIN RTOS_SEMAPHORES */
-	/* add semaphores, ... */
+	/* creation of imuMutex */
+	imuMutexHandle = osSemaphoreNew(1, 1, &imuMutex_attributes);
 	/* USER CODE END RTOS_SEMAPHORES */
 
 	/* USER CODE BEGIN RTOS_TIMERS */
@@ -373,32 +391,30 @@ static void MX_NVIC_Init(void) {
  * @param None
  * @retval None
  */
-static void MX_I2C1_Init(void)
-{
+static void MX_I2C1_Init(void) {
 
-  /* USER CODE BEGIN I2C1_Init 0 */
+	/* USER CODE BEGIN I2C1_Init 0 */
 
-  /* USER CODE END I2C1_Init 0 */
+	/* USER CODE END I2C1_Init 0 */
 
-  /* USER CODE BEGIN I2C1_Init 1 */
+	/* USER CODE BEGIN I2C1_Init 1 */
 
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 400000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
+	/* USER CODE END I2C1_Init 1 */
+	hi2c1.Instance = I2C1;
+	hi2c1.Init.ClockSpeed = 400000;
+	hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+	hi2c1.Init.OwnAddress1 = 0;
+	hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	hi2c1.Init.OwnAddress2 = 0;
+	hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+	if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN I2C1_Init 2 */
 
-  /* USER CODE END I2C1_Init 2 */
+	/* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -826,32 +842,36 @@ void startEncoder(TIM_HandleTypeDef *htim) {
 }
 
 int32_t readEncoder(TIM_HandleTypeDef *htim) {
-    int16_t current_count = __HAL_TIM_GET_COUNTER(htim);
-    int16_t diff = 0;
+	int16_t current_count = __HAL_TIM_GET_COUNTER(htim);
+	int16_t diff = 0;
 
-    if (htim->Instance == TIM3) {  // Right encoder
-        diff = current_count - left_encoder_prev_count;
+	if (htim->Instance == TIM3) {  // Right encoder
+		diff = current_count - left_encoder_prev_count;
 
-        // 오버플로우 / 언더플로우 보정
-        if (diff > 30000) diff -= 65536;
-        else if (diff < -30000) diff += 65536;
+		// 오버플로우 / 언더플로우 보정
+		if (diff > 30000)
+			diff -= 65536;
+		else if (diff < -30000)
+			diff += 65536;
 
-        right_encoder_total_count += diff;
-        right_encoder_prev_count = current_count;
-        return right_encoder_total_count;
-    } else if (htim->Instance == TIM2) {  // Left encoder
-        diff = current_count - left_encoder_prev_count;
+		right_encoder_total_count += diff;
+		right_encoder_prev_count = current_count;
+		return right_encoder_total_count;
+	} else if (htim->Instance == TIM2) {  // Left encoder
+		diff = current_count - left_encoder_prev_count;
 
-        // 오버플로우 / 언더플로우 보정
-        if (diff > 30000) diff -= 65536;
-        else if (diff < -30000) diff += 65536;
+		// 오버플로우 / 언더플로우 보정
+		if (diff > 30000)
+			diff -= 65536;
+		else if (diff < -30000)
+			diff += 65536;
 
-        left_encoder_total_count += diff;
-        left_encoder_prev_count = current_count;
-        return left_encoder_total_count;
-    } else {
-        return 0;  // 지원하지 않는 타이머
-    }
+		left_encoder_total_count += diff;
+		left_encoder_prev_count = current_count;
+		return left_encoder_total_count;
+	} else {
+		return 0;  // 지원하지 않는 타이머
+	}
 }
 
 /* MF = Multiplication Factor
@@ -917,6 +937,50 @@ void parseCommand(char *cmd) {
 	} else {
 		osDelay(1);
 	}
+}
+void updateImuData() {
+	int16_t accel[3], gyro[3], mag[3];
+	imu.getAccelData(accel);
+	imu.getGyroData(gyro);
+	imu.getMagData(mag);
+
+	imu.ax = accel[0] * imu.aRes;
+	imu.ay = accel[1] * imu.aRes;
+	imu.az = accel[2] * imu.aRes;
+	imu.gx = gyro[0] * imu.gRes * M_PI / 180.0f;
+	imu.gy = gyro[1] * imu.gRes * M_PI / 180.0f;
+	imu.gz = gyro[2] * imu.gRes * M_PI / 180.0f;
+	imu.mx = mag[0] * imu.mRes;
+	imu.my = mag[1] * imu.mRes;
+	imu.mz = mag[2] * imu.mRes;
+
+	imu.deltat = 0.005f;
+	imu.MadgwickQuaternionUpdate(imu.ax, imu.ay, imu.az, imu.gx, imu.gy, imu.gz,
+			imu.mx, imu.my, imu.mz);
+
+	imu.pitch = asinf(-2.0f * (imu.q[1] * imu.q[3] - imu.q[0] * imu.q[2]))
+			* 180.0f / M_PI;
+	imu.roll = atan2f(imu.q[1] * imu.q[2] + imu.q[0] * imu.q[3],
+			0.5f - imu.q[2] * imu.q[2] - imu.q[3] * imu.q[3]) * 180.0f / M_PI;
+	imu.yaw = atan2f(2.0f * (imu.q[1] * imu.q[2] + imu.q[0] * imu.q[3]),
+			imu.q[0] * imu.q[0] + imu.q[1] * imu.q[1] - imu.q[2] * imu.q[2]
+					- imu.q[3] * imu.q[3]) * 180.0f / M_PI;
+
+	osSemaphoreAcquire(imuMutexHandle, osWaitForever);
+	sharedImuData.ax = accel[0];
+	sharedImuData.ay = accel[1];
+	sharedImuData.az = accel[2];
+	sharedImuData.gx = gyro[0];
+	sharedImuData.gy = gyro[1];
+	sharedImuData.gz = gyro[2];
+	sharedImuData.mx = mag[0];
+	sharedImuData.my = mag[1];
+	sharedImuData.mz = mag[2];
+	sharedImuData.temperature = imu.getTempData() / 333.87f + 21.0f;
+	sharedImuData.pitch = imu.pitch;
+	sharedImuData.roll = imu.roll;
+	sharedImuData.yaw = imu.yaw;
+	osSemaphoreRelease(imuMutexHandle);
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
@@ -1129,12 +1193,13 @@ void vLiftControlTask(void *argument) {
 /* USER CODE END Header_vSystemMonitorTask */
 void vSystemMonitorTask(void *argument) {
 	/* USER CODE BEGIN vSystemMonitorTask */
-	char tx_buffer[128];
+	char tx_buffer[256];
 	/* Infinite loop */
 	for (;;) {
 		int32_t left_encoder = readEncoder(&htim3);
 		int32_t right_encoder = readEncoder(&htim2);
-		if(left_encoder <0) {
+		updateImuData();
+		if (left_encoder < 0) {
 			printf("test");
 		}
 
@@ -1147,16 +1212,18 @@ void vSystemMonitorTask(void *argument) {
 				(xEventGroupGetBits(emegencyEventGroup) & EmergencyOccure) ?
 						1 : 0;
 
-		ImuRawData imu = MPU9250_ReadImu(&hi2c1);
-
 		snprintf(tx_buffer, sizeof(tx_buffer),
-		    "SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%d,R%d;ACC:%d,%d,%d,GYRO:%d,%d,%d\n",
-		    current_left_pwm, current_right_pwm, trash_state,
-		    emergency_state, left_encoder, right_encoder,
-			imu.ax, imu.ay, imu.az, imu.gx, imu.gy, imu.gz);
+		    "SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%d,R%d;ACC:%d,%d,%d,GYRO:%d,%d,%d,MAG:%d,%d,%d,ORI:%.2f,%.2f,%.2f\n",
+		    current_left_pwm, current_right_pwm,
+		    trash_state, emergency_state,
+		    left_encoder, right_encoder,
+			sharedImuData.ax, sharedImuData.ay, sharedImuData.az,
+			sharedImuData.gx, sharedImuData.gy, sharedImuData.gz,
+			sharedImuData.mx, sharedImuData.my, sharedImuData.mz,
+			sharedImuData.pitch, sharedImuData.roll, sharedImuData.yaw);
 
 		HAL_UART_Transmit(&huart5, (uint8_t*) tx_buffer, strlen(tx_buffer),
-				HAL_MAX_DELAY);
+		HAL_MAX_DELAY);
 
 		osDelay(500);  // 500ms마다 송신 (필요에 따라 조절 가능)
 	}
