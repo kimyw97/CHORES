@@ -78,7 +78,8 @@ ament_target_dependencies(action_drive
   rclcpp_action
   std_msgs
   geometry_msgs
-
+  serial
+	sensor_msgs
 )
 
 

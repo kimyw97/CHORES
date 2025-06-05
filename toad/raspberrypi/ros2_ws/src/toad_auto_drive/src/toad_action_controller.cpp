@@ -1,14 +1,12 @@
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
-#include "toad_auto_drive/action/toad_auto_drive_action.hpp"
-
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
+#include <toad_auto_drive/action/toad_auto_drive_action.hpp>
 #include <std_msgs/msg/bool.hpp>
-#include <termios.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <serial/serial.h>
 #include <string>
 #include <thread>
 #include <utility>
+#include <regex>
 
 class DriveByIRActionServer : public rclcpp::Node {
 public:
@@ -30,13 +28,25 @@ public:
         10,
         std::bind(&DriveByIRActionServer::isTrashCallback, this, std::placeholders::_1));
 
-    openSerial("/dev/ttyUSB0", B115200);
+    try {
+      serial_.setPort("/dev/ttyUSB0");
+      serial_.setBaudrate(115200);
+      serial::Timeout to = serial::Timeout::simpleTimeout(100);
+      serial_.setTimeout(to);
+      serial_.open();
+    } catch (serial::IOException &e) {
+      RCLCPP_ERROR(this->get_logger(), "Unable to open serial port.");
+    }
+
+    if (serial_.isOpen()) {
+      RCLCPP_INFO(this->get_logger(), "Serial port opened successfully.");
+    }
   }
 
 private:
   rclcpp_action::Server<DriveByIR>::SharedPtr action_server_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr is_trash_sub_;
-  int serial_fd_;
+  serial::Serial serial_;
   bool is_trash_detected_;
 
   void isTrashCallback(const std_msgs::msg::Bool::SharedPtr msg) {
@@ -96,21 +106,23 @@ private:
   }
 
   std::pair<int, int> readIRPair() {
-    char buffer[16];
-    int n = read(serial_fd_, buffer, sizeof(buffer) - 1);
-    if (n > 0) {
-      buffer[n] = '\0';
-      std::string data(buffer);
+    if (serial_.available()) {
+      std::string data = serial_.readline(1024, "\n");
+      RCLCPP_INFO(this->get_logger(), "Received: %s", data.c_str());
 
-      size_t first = data.find("s");
-      size_t second = data.find("s", first + 1);
+      bool left = false, right = false;
+      std::regex s1_regex("s1(\\d+)");
+      std::regex s2_regex("s2(\\d+)");
+      std::smatch match;
 
-      if (first != std::string::npos && second != std::string::npos && second + 2 < data.size()) {
-        int left = data[first + 1] - '0';
-        int right = data[second + 1] - '0';
-        RCLCPP_INFO(this->get_logger(), "recive s1%ds2%d", left, right);
-        return {left, right};
+      if (std::regex_search(data, match, s1_regex) && match.size() > 1) {
+        left = (std::stoi(match[1]) == 1);
       }
+      if (std::regex_search(data, match, s2_regex) && match.size() > 1) {
+        right = (std::stoi(match[1]) == 1);
+      }
+
+      return {left, right};
     }
     return {0, 0};
   }
@@ -142,28 +154,9 @@ private:
     writeSerial("L0R0\n");
   }
 
-  void openSerial(const std::string &port, int baudrate) {
-    serial_fd_ = open(port.c_str(), O_RDWR | O_NOCTTY);
-    if (serial_fd_ == -1) {
-      RCLCPP_ERROR(this->get_logger(), "Failed to open serial port %s", port.c_str());
-      return;
-    }
-
-    struct termios tty;
-    tcgetattr(serial_fd_, &tty);
-    cfsetispeed(&tty, baudrate);
-    cfsetospeed(&tty, baudrate);
-    tty.c_cflag |= (CLOCAL | CREAD);
-    tty.c_cflag &= ~CSIZE;
-    tty.c_cflag |= CS8;
-    tty.c_cflag &= ~PARENB;
-    tty.c_cflag &= ~CSTOPB;
-    tcsetattr(serial_fd_, TCSANOW, &tty);
-  }
-
   void writeSerial(const std::string &cmd) {
-    if (serial_fd_ != -1) {
-      write(serial_fd_, cmd.c_str(), cmd.size());
+    if (serial_.isOpen()) {
+      serial_.write(cmd);
     } else {
       RCLCPP_WARN(this->get_logger(), "Serial port not open");
     }
