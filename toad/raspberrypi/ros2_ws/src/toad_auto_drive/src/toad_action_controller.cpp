@@ -1,6 +1,6 @@
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_action/rclcpp_action.hpp>
-#include <my_robot_interfaces/action/drive_by_ir.hpp>
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+#include "toad_auto_drive/action/toad_auto_drive_action.hpp"
 
 #include <std_msgs/msg/bool.hpp>
 #include <termios.h>
@@ -12,7 +12,7 @@
 
 class DriveByIRActionServer : public rclcpp::Node {
 public:
-  using DriveByIR = my_robot_interfaces::action::DriveByIR;
+  using DriveByIR = toad_auto_drive::action::ToadAutoDriveAction;
   using GoalHandleDriveByIR = rclcpp_action::ServerGoalHandle<DriveByIR>;
 
   DriveByIRActionServer()
@@ -119,16 +119,16 @@ private:
 
     if (left_ir == 1 && right_ir == 1) {
       RCLCPP_INFO(this->get_logger(), "Go Forward");
-      cmd = "L100R100\n";
+      cmd = "L30R30\n";
     } else if (left_ir == 0 && right_ir == 0) {
       RCLCPP_INFO(this->get_logger(), "Stop");
       cmd = "L0R0\n";
     } else if (left_ir == 1 && right_ir == 0) {
       RCLCPP_INFO(this->get_logger(), "Turn Right");
-      cmd = "L80R0\n";
+      cmd = "L30R0\n";
     } else if (left_ir == 0 && right_ir == 1) {
       RCLCPP_INFO(this->get_logger(), "Turn Left");
-      cmd = "L0R80\n";
+      cmd = "L0R30\n";
     } else {
       cmd = "L0R0\n";
     }
