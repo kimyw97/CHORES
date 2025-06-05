@@ -47,6 +47,12 @@ geometry_msgs
 serial
 )
 
+add_executable(test_trash src/test_trash.cpp)
+ament_target_dependencies(test_trash
+rclcpp
+std_msgs
+)
+
 add_executable(toad_controller_node src/toad_controller_node.cpp)
 ament_target_dependencies(toad_controller_node
 	rclcpp
@@ -125,6 +131,7 @@ install(
     toad_teleop_sub
     toad_controller_node
     action_drive
+    test_trash
   DESTINATION lib/${PROJECT_NAME}
 )
 
