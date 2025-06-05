@@ -300,7 +300,7 @@ void process_command(char* raw_cmd) {
    /* AGV 모터 명령인지 확인 후 동작*/
     int left = 0, right = 0;
     if (sscanf(raw_cmd, "L%dR%d", &left, &right) == 2) {
-        printf("[AGV] Parsed → L=%d, R=%d\n", left, right);
+        //printf("[AGV] Parsed → L=%d, R=%d\n", left, right);
         set_motor_pwm((int)left,(int)right);  // AGV 모터 동작
         return;  // AGV 명령이면 여기서 끝
     }
