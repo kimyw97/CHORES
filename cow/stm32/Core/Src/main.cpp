@@ -105,7 +105,7 @@ const osThreadAttr_t LiftControlTask_attributes = { .name = "LiftControlTask",
 /* Definitions for SystemMonitorTa */
 osThreadId_t SystemMonitorTaHandle;
 const osThreadAttr_t SystemMonitorTa_attributes = { .name = "SystemMonitorTa",
-		.stack_size = 128 * 8, .priority = (osPriority_t) osPriorityLow, };
+		.stack_size = 128 * 10, .priority = (osPriority_t) osPriorityLow, };
 /* Definitions for EmergencyTask */
 osThreadId_t EmergencyTaskHandle;
 const osThreadAttr_t EmergencyTask_attributes = { .name = "EmergencyTask",
@@ -1213,7 +1213,7 @@ void vSystemMonitorTask(void *argument) {
 						1 : 0;
 
 		snprintf(tx_buffer, sizeof(tx_buffer),
-		    "SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%d,R%d;ACC:%d,%d,%d,GYRO:%d,%d,%d,MAG:%d,%d,%d,ORI:%.2f,%.2f,%.2f\n",
+		    "SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%d,R%d;ACC:%d,%d,%d,GYRO:%d,%d,%d,MAG:%d,%d,%d,ORI:%.3f,%.3f,%.3f\n",
 		    current_left_pwm, current_right_pwm,
 		    trash_state, emergency_state,
 		    left_encoder, right_encoder,
