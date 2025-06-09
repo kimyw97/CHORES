@@ -17,8 +17,11 @@
   <depend>nlohmann_json</depend>
   <depend>rosidl_deault_generators</depend>
   <depend>trash_camera</depend>
+  <depend>rclcpp_action</depend>
+
   <exec_depend>rosidl_default_runtime</exec_depend>
   <member_of_group>rosidl_interface_packages</member_of_group>
+  
 
 
   <test_depend>ament_lint_auto</test_depend>

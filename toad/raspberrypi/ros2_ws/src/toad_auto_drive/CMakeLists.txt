@@ -10,14 +10,19 @@ find_package(geometry_msgs REQUIRED)
 find_package(serial REQUIRED)
 find_package(OpenCV REQUIRED)  # 🔹 OpenCV 추가
 find_package(rosidl_default_generators REQUIRED)
-find_package(trash_camera REQUIRED)
+find_package(trash_camera REQUIRED) # action 정의한 패키지
+find_package(rclcpp_action REQUIRED)
+
+
 
 # 메시지 인터페이스 생성
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ToadDriveMsg.msg"
   "msg/ToadTeleopMsg.msg"
-  DEPENDENCIES std_msgs geometry_msgs
+  "action/ToadAutoDriveAction.action"
+  DEPENDENCIES builtin_interfaces
 )
+
 
 
 
@@ -42,6 +47,14 @@ geometry_msgs
 serial
 )
 
+
+
+add_executable(test_trash src/test_trash.cpp)
+ament_target_dependencies(test_trash
+rclcpp
+std_msgs
+)
+
 add_executable(toad_controller_node src/toad_controller_node.cpp)
 ament_target_dependencies(toad_controller_node
 	rclcpp
@@ -59,6 +72,28 @@ std_msgs
 sensor_msgs
 geometry_msgs
 serial
+)
+
+add_executable(action_drive src/toad_action_controller.cpp)
+ament_target_dependencies(action_drive 
+  rclcpp
+  rclcpp_action
+  std_msgs
+  geometry_msgs
+  serial
+	sensor_msgs
+)
+
+
+
+add_executable(toad_action_client src/toad_action_client.cpp)
+ament_target_dependencies(toad_action_client
+  rclcpp
+  rclcpp_action
+  std_msgs
+  geometry_msgs
+  serial
+	sensor_msgs
 )
 
 
@@ -96,6 +131,14 @@ target_link_libraries(toad_controller_node
 	${TYPESUPPORT_TARGET}
 	)
 
+  target_link_libraries(action_drive
+	${TYPESUPPORT_TARGET}
+	)
+
+  target_link_libraries(toad_action_client
+	${TYPESUPPORT_TARGET}
+	)
+
 # 설치 지시
 install(
   TARGETS
@@ -104,6 +147,9 @@ install(
     toad_teleop_pub
     toad_teleop_sub
     toad_controller_node
+    action_drive
+    test_trash
+    toad_action_client
   DESTINATION lib/${PROJECT_NAME}
 )
 

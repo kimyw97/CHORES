@@ -300,7 +300,7 @@ void process_command(char* raw_cmd) {
    /* AGV 모터 명령인지 확인 후 동작*/
     int left = 0, right = 0;
     if (sscanf(raw_cmd, "L%dR%d", &left, &right) == 2) {
-        printf("[AGV] Parsed → L=%d, R=%d\n", left, right);
+        //printf("[AGV] Parsed → L=%d, R=%d\n", left, right);
         set_motor_pwm((int)left,(int)right);  // AGV 모터 동작
         return;  // AGV 명령이면 여기서 끝
     }
@@ -350,7 +350,7 @@ void set_motor_pwm(int left, int right)
         // 후진
         HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In1_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In2_Pin, GPIO_PIN_SET);
-    } else {
+    } else if(left == 0) {
         // 정지→Coast
         HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In1_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In2_Pin, GPIO_PIN_RESET);
@@ -365,7 +365,7 @@ void set_motor_pwm(int left, int right)
         // 후진
         HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In1_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In2_Pin, GPIO_PIN_SET);
-    } else {
+    } else if(right == 0){
         // 정지→Coast
         HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In1_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In2_Pin, GPIO_PIN_RESET);
