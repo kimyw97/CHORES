@@ -64,7 +64,7 @@ private:
     }
     const int ENCODER_DEADBAND = 10;
     if (std::abs(delta_left) < ENCODER_DEADBAND) {
-      delta_right = 0;
+      delta_left = 0;
     }
     if (std::abs(delta_right) < ENCODER_DEADBAND) {
       delta_right = 0;
