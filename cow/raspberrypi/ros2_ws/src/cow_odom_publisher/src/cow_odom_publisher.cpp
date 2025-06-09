@@ -62,6 +62,13 @@ private:
     if (std::abs(delta_left - delta_right) > 20) {
       d_theta = 0.0;
     }
+    const int ENCODER_DEADBAND = 2;
+    if (std::abs(delta_left) < ENCODER_DEADBAND) {
+      delta_right = 0;
+    }
+    if (std::abs(delta_right) < ENCODER_DEADBAND) {
+      delta_right = 0;
+    }
 
     x_ += d_center * std::cos(th_ + d_theta / 2.0);
     y_ += d_center * std::sin(th_ + d_theta / 2.0);
