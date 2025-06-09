@@ -130,9 +130,9 @@ private:
     imu.angular_velocity_covariance[4] = 0.05;
     imu.angular_velocity_covariance[8] = 0.1;
 
-    imu.linear_acceleration_covariance[0] = 0.2;
-    imu.linear_acceleration_covariance[4] = 0.2;
-    imu.linear_acceleration_covariance[8] = 0.2;
+    imu.linear_acceleration_covariance[0] = 0;
+    imu.linear_acceleration_covariance[4] = 0;
+    imu.linear_acceleration_covariance[8] = 0;
 
     imu_pub_->publish(imu);
 
