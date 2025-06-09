@@ -62,7 +62,7 @@ private:
     if (std::abs(delta_left - delta_right) > 20) {
       d_theta = 0.0;
     }
-    const int ENCODER_DEADBAND = 4;
+    const int ENCODER_DEADBAND = 10;
     if (std::abs(delta_left) < ENCODER_DEADBAND) {
       delta_right = 0;
     }
