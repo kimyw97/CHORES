@@ -59,7 +59,7 @@ private:
     double d_theta = (d_right - d_left) / WHEEL_BASE;
 
     // 회전 누적 방지 로직
-    if (std::abs(delta_left - delta_right) > 20 && msg->speed_l == 0 && msg->speed_r == 0) {
+    if (std::abs(delta_left - delta_right) > 20) {
       d_theta = 0.0;
     }
 
