@@ -4097,12 +4097,11 @@ extern "C" int main(void)
 
 	send_infrared_feedback();
  8002172:	f000 fa89 	bl	8002688 <_Z22send_infrared_feedbackv>
-	HAL_Delay(100);
- 8002176:	2064      	movs	r0, #100	@ 0x64
- 8002178:	f000 fe80 	bl	8002e7c <HAL_Delay>
+	HAL_Delay(1000);
+ 8002176:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 800217a:	f000 fe7f 	bl	8002e7c <HAL_Delay>
 	if (command_ready == 1) {
- 800217c:	e7e4      	b.n	8002148 <main+0x60>
- 800217e:	bf00      	nop
+ 800217e:	e7e3      	b.n	8002148 <main+0x60>
  8002180:	200002a4 	.word	0x200002a4
  8002184:	200002ec 	.word	0x200002ec
  8002188:	200001f0 	.word	0x200001f0
