@@ -75,11 +75,11 @@ private:
     } else if (s1 == 1 && s2 == 0) {
       RCLCPP_INFO(this->get_logger(), "Turn Left");
       cmd = "L-30R30\n";
-    } else {
+    } /*else {
       RCLCPP_INFO(this->get_logger(), "Stop");
       cmd = "L0R0\n";
     }
-
+*/
     writeSerial(cmd);
 
     feedback->status = "IR received: s1=" + std::to_string(s1) +
