@@ -3,7 +3,7 @@ int32 s1
 int32 s2
 ---
 # Result
-bool success
+string command
 ---
 # Feedback
 string status
