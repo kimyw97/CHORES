@@ -140,7 +140,7 @@ private:
       RCLCPP_INFO(this->get_logger(), "Turn Left");
       cmd = "L-30R30\n";
     }  else if(left_ir == 0 && right_ir == 0) {
-      cmd = "L0R0";
+      cmd = "L0R0\n";
     }
       
 
