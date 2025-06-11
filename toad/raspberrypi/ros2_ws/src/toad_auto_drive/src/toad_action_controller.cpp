@@ -1,12 +1,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <toad_auto_drive/action/toad_auto_drive_action.hpp>
-#include <std_msgs/msg/bool.hpp>
 #include <serial/serial.h>
 #include <string>
 #include <thread>
-#include <utility>
-#include <regex>
 
 class DriveByIRActionServer : public rclcpp::Node {
 public:
@@ -14,7 +11,7 @@ public:
   using GoalHandleDriveByIR = rclcpp_action::ServerGoalHandle<DriveByIR>;
 
   DriveByIRActionServer()
-      : Node("drive_by_ir_action_server"), is_trash_detected_(false) {
+      : Node("drive_by_ir_action_server") {
 
     action_server_ = rclcpp_action::create_server<DriveByIR>(
         this,
@@ -23,13 +20,8 @@ public:
         std::bind(&DriveByIRActionServer::handle_cancel, this, std::placeholders::_1),
         std::bind(&DriveByIRActionServer::handle_accepted, this, std::placeholders::_1));
 
-    is_trash_sub_ = this->create_subscription<std_msgs::msg::Bool>(
-        "is_trash",
-        10,
-        std::bind(&DriveByIRActionServer::isTrashCallback, this, std::placeholders::_1));
-
     try {
-      serial_.setPort("/dev/ttyUSB0");
+      serial_.setPort("/dev/ttyUSB0");  // 환경에 따라 변경 필요
       serial_.setBaudrate(115200);
       serial::Timeout to = serial::Timeout::simpleTimeout(100);
       serial_.setTimeout(to);
@@ -45,13 +37,7 @@ public:
 
 private:
   rclcpp_action::Server<DriveByIR>::SharedPtr action_server_;
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr is_trash_sub_;
   serial::Serial serial_;
-  bool is_trash_detected_;
-
-  void isTrashCallback(const std_msgs::msg::Bool::SharedPtr msg) {
-    is_trash_detected_ = msg->data;
-  }
 
   rclcpp_action::GoalResponse handle_goal(
       const rclcpp_action::GoalUUID &,
@@ -75,77 +61,38 @@ private:
     auto feedback = std::make_shared<DriveByIR::Feedback>();
     auto result = std::make_shared<DriveByIR::Result>();
 
-    while (rclcpp::ok() && !goal_handle->is_canceling()) {
-      if (is_trash_detected_) {
-        feedback->status = "Trash detected. Stopping.";
-        goal_handle->publish_feedback(feedback);
-        stop();
-        result->success = true;
-        goal_handle->succeed(result);
-        return;
-      }
+    int s1 = goal_handle->get_goal()->s1;
+    int s2 = goal_handle->get_goal()->s2;
 
-      auto [left_ir, right_ir] = readIRPair();
-      driveWithIR(left_ir, right_ir);
-
-      feedback->status = "IR values: L=" + std::to_string(left_ir) + ", R=" + std::to_string(right_ir);
-      goal_handle->publish_feedback(feedback);
-
-      rclcpp::sleep_for(std::chrono::milliseconds(200));
-    }
-
-    if (goal_handle->is_canceling()) {
-      stop();
-      result->success = false;
-      goal_handle->canceled(result);
-      return;
-    }
-
-    result->success = true;
-    goal_handle->succeed(result);
-  }
-
-  std::pair<int, int> readIRPair() {
-    if (serial_.available()) {
-      std::string data = serial_.readline(1024, "\n");
-      RCLCPP_INFO(this->get_logger(), "Received: %s", data.c_str());
-
-      bool left = false, right = false;
-      std::regex s1_regex("s1(\\d+)");
-      std::regex s2_regex("s2(\\d+)");
-      std::smatch match;
-
-      if (std::regex_search(data, match, s1_regex) && match.size() > 1) {
-        left = (std::stoi(match[1]) == 1);
-      }
-      if (std::regex_search(data, match, s2_regex) && match.size() > 1) {
-        right = (std::stoi(match[1]) == 1);
-      }
-
-      return {left, right};
-    }
-    return {0, 0};
-  }
-
-  void driveWithIR(int left_ir, int right_ir) {
     std::string cmd;
 
-    if (left_ir == 1 && right_ir == 1) {
+    if (s1 == 1 && s2 == 1) {
       RCLCPP_INFO(this->get_logger(), "Go Forward");
       cmd = "L30R30\n";
-    }  else if (left_ir == 1 && right_ir == 0) {
+    } else if (s1 == 0 && s2 == 1) {
       RCLCPP_INFO(this->get_logger(), "Turn Right");
       cmd = "L30R-30\n";
-    } else if (left_ir == 0 && right_ir == 1) {
+    } else if (s1 == 1 && s2 == 0) {
       RCLCPP_INFO(this->get_logger(), "Turn Left");
       cmd = "L-30R30\n";
-    }  else if(left_ir == 0 && right_ir == 0) {
+    } else {
       RCLCPP_INFO(this->get_logger(), "Stop");
       cmd = "L0R0\n";
     }
-      
 
     writeSerial(cmd);
+
+    feedback->status = "IR received: s1=" + std::to_string(s1) +
+                       ", s2=" + std::to_string(s2) +
+                       ", command=" + cmd;
+    goal_handle->publish_feedback(feedback);
+
+    rclcpp::sleep_for(std::chrono::milliseconds(500));
+
+    stop();
+
+    result->success = true;
+    goal_handle->succeed(result);
   }
 
   void stop() {
