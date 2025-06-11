@@ -46,9 +46,9 @@ private:
     int s2 = goal->s2;
 
     std::string command;
-    if (s1 == 1 && s2 == 1) command = "L35R35";
-    else if (s1 == 1 && s2 == 0) command = "L-35R35";
-    else if (s1 == 0 && s2 == 1) command = "L35R-35";
+    if (s1 == 1 && s2 == 1) command = "L33R33";
+    else if (s1 == 1 && s2 == 0) command = "L-33R33";
+    else if (s1 == 0 && s2 == 1) command = "L33R-33";
     else command = "L0R0";
 
     feedback->status = "Processed IR values: s1=" + std::to_string(s1) + ", s2=" + std::to_string(s2);
