@@ -1,10 +1,11 @@
-../Core/Src/main.cpp:113:16:int main()	3
+../Core/Src/main.cpp:114:16:int main()	3
 ../Core/Src/main.cpp:175:6:void SystemClock_Config()	3
 ../Core/Src/main.cpp:237:13:void MX_GPIO_Init()	1
 ../Core/Src/main.cpp:278:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	5
 ../Core/Src/main.cpp:296:6:void process_command(char*)	6
 ../Core/Src/main.cpp:337:6:void set_motor_pwm(int, int)	7
 ../Core/Src/main.cpp:385:6:void send_infrared_feedback()	3
-../Core/Src/main.cpp:401:6:void Error_Handler()	1
-../Core/Src/main.cpp:410:1:void __static_initialization_and_destruction_0(int, int)	3
-../Core/Src/main.cpp:410:1:cpp)	1
+../Core/Src/main.cpp:394:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	2
+../Core/Src/main.cpp:408:6:void Error_Handler()	1
+../Core/Src/main.cpp:417:1:void __static_initialization_and_destruction_0(int, int)	3
+../Core/Src/main.cpp:417:1:cpp)	1

@@ -63,6 +63,7 @@ extern "C" {
 /* USER CODE BEGIN PTD */
 void send_infrared_feedback();
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -161,8 +162,7 @@ extern "C" int main(void)
 	    memset(rx_buf, 0, sizeof(rx_buf));  // 버퍼 클리어
 	}
 
-	send_infrared_feedback();
-	HAL_Delay(1000);
+
 
   }
   /* USER CODE END 3 */
@@ -389,6 +389,13 @@ void send_infrared_feedback() {
     sprintf(msg, "s1%ds2%d\n", s1 == GPIO_PIN_RESET ? 1 : 0, s2 == GPIO_PIN_RESET ? 1 : 0);
     HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM3) {  // TIM3에서 인터럽트 발생 시
+        send_infrared_feedback();  // IR 센서 상태 UART 전송
+    }
 }
 
 
