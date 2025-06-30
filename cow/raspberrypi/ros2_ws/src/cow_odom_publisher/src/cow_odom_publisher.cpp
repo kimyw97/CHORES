@@ -99,7 +99,7 @@ private:
     sensor_msgs::msg::JointState joint_state;
     joint_state.header.stamp = current_time;
     joint_state.name = {"left_wheel_joint", "right_wheel_joint",
-                        "base_footprint_to_base_link", "base_link_to_laser"};
+                        "base_footprint_to_base_link", "base_link_to_base_scan"};
     joint_state.position = {left_angle, right_angle, 0.0, 0.0};
     joint_pub_->publish(joint_state);
 
