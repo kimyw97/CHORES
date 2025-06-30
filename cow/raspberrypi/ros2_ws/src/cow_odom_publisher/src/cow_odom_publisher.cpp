@@ -13,12 +13,14 @@ public:
       : Node("cow_odom_publisher"), x_(0.0), y_(0.0), th_(0.0),
         last_left_ticks_(0), last_right_ticks_(0), first_reading_(true) {
     odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
-    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>(
+        "joint_states", 10);
     imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
 
     sub_ = this->create_subscription<robot_monitoring::msg::RobotStatus>(
         "robot_status", 10,
-        std::bind(&OdomFromStatusNode::statusCallback, this, std::placeholders::_1));
+        std::bind(&OdomFromStatusNode::statusCallback, this,
+                  std::placeholders::_1));
 
     last_time_ = this->now();
     RCLCPP_INFO(this->get_logger(), "Odometry + IMU publisher started.");
@@ -49,13 +51,14 @@ private:
 
     const double TICKS_PER_REV = 660.0;
     const double WHEEL_RADIUS = 0.045;
-    const double WHEEL_BASE = 0.30;
+    const double WHEEL_BASE = 0.165;
 
     double dist_per_tick = 2 * M_PI * WHEEL_RADIUS / TICKS_PER_REV;
     double d_left = delta_left * dist_per_tick;
     double d_right = delta_right * dist_per_tick;
 
     double d_center = (d_left + d_right) / 2.0;
+    // 사실 sin(d_theta)임
     double d_theta = (d_right - d_left) / WHEEL_BASE;
 
     // 회전 누적 방지 로직
@@ -137,13 +140,11 @@ private:
     imu_pub_->publish(imu);
 
     RCLCPP_INFO(this->get_logger(),
-                "x: %.3f, y: %.3f, th: %.3f | ACC[%.2f %.2f %.2f] | GYRO[%.2f %.2f %.2f]",
-                x_, y_, th_,
-                imu.linear_acceleration.x,
-                imu.linear_acceleration.y,
-                imu.linear_acceleration.z,
-                imu.angular_velocity.x,
-                imu.angular_velocity.y,
+                "x: %.3f, y: %.3f, th: %.3f | ACC[%.2f %.2f %.2f] | GYRO[%.2f "
+                "%.2f %.2f]",
+                x_, y_, th_, imu.linear_acceleration.x,
+                imu.linear_acceleration.y, imu.linear_acceleration.z,
+                imu.angular_velocity.x, imu.angular_velocity.y,
                 imu.angular_velocity.z);
   }
 
