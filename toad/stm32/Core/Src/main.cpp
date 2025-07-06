@@ -162,7 +162,7 @@ extern "C" int main(void)
 	}
 
 	send_infrared_feedback();
-	HAL_Delay(800);
+	HAL_Delay(700);
 
   }
   /* USER CODE END 3 */
