@@ -46,8 +46,8 @@ private:
     int s2 = goal->s2;
 
     std::string command;
-    std::string L_speed = "32";
-    std::string R_speed = "33";
+    std::string L_speed = "30";
+    std::string R_speed = "31";
     if (s1 == 1 && s2 == 1) command = "L" + L_speed + "R" + R_speed;
     else if (s1 == 1 && s2 == 0) command = "L-" + L_speed + "R" + R_speed;
     else if (s1 == 0 && s2 == 1) command = "L"+ L_speed + "R-" + R_speed;
