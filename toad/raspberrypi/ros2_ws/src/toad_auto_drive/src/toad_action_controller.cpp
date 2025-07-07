@@ -47,7 +47,7 @@ private:
 
     std::string command;
     std::string L_speed = "33";
-    std::string R_speed = "35";
+    std::string R_speed = "34";
     if (s1 == 1 && s2 == 1) command = "L" + L_speed + "R" + R_speed;
     else if (s1 == 1 && s2 == 0) command = "L-" + L_speed + "R" + R_speed;
     else if (s1 == 0 && s2 == 1) command = "L"+ L_speed + "R-" + R_speed;
