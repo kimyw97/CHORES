@@ -1,4 +1,4 @@
-/Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.macos64_1.1.0.202410301201/tools/arm-none-eabi/include/c++/12.3.1/arm-none-eabi/thumb/v7e-m+fp/hard/bits/gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	1
+/Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.macos64_1.0.0.202411102158/tools/arm-none-eabi/include/c++/13.3.1/arm-none-eabi/thumb/v7e-m+fp/hard/bits/gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	1
 ../Core/Src/main.cpp:185:5:int main()	1
 ../Core/Src/main.cpp:341:6:void SystemClock_Config()	3
 ../Core/Src/main.cpp:383:13:void MX_NVIC_Init()	1
@@ -31,6 +31,5 @@
 ../Core/Src/main.cpp:1241:6:void vEmergencyTask(void*)	2
 ../Core/Src/main.cpp:1261:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	2
 ../Core/Src/main.cpp:1277:6:void Error_Handler()	1
-../Core/Src/main.cpp:1284:1:void __static_initialization_and_destruction_0(int, int)	5
-../Core/Src/main.cpp:1284:1:cpp)	1
+../Core/Src/main.cpp:1284:1:void __static_initialization_and_destruction_0()	1
 ../Core/Src/main.cpp:1284:1:cpp)	1
