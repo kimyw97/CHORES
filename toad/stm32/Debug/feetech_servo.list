@@ -4097,8 +4097,8 @@ extern "C" int main(void)
 
 	send_infrared_feedback();
  8002172:	f000 fa89 	bl	8002688 <_Z22send_infrared_feedbackv>
-	HAL_Delay(1000);
- 8002176:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+	HAL_Delay(300);
+ 8002176:	f44f 7096 	mov.w	r0, #300	@ 0x12c
  800217a:	f000 fe7f 	bl	8002e7c <HAL_Delay>
 	if (command_ready == 1) {
  800217e:	e7e3      	b.n	8002148 <main+0x60>
