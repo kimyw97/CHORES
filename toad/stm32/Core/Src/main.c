@@ -27,7 +27,9 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+void send_infrared_feedback();
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+void process_command(char* raw_cmd);
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -53,6 +55,20 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for myTask02 */
+osThreadId_t myTask02Handle;
+const osThreadAttr_t myTask02_attributes = {
+  .name = "myTask02",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for myTask03 */
+osThreadId_t myTask03Handle;
+const osThreadAttr_t myTask03_attributes = {
+  .name = "myTask03",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -64,6 +80,8 @@ static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM4_Init(void);
 void StartDefaultTask(void *argument);
+void StartTask02(void *argument);
+void StartTask03(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -71,6 +89,121 @@ void StartDefaultTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+    if (huart->Instance == USART3) {
+        if (rx_byte == '\n' || rx_byte == '\r') {
+            rx_buf[rx_index] = '\0';
+            command_ready = 1;  //  플래그만 세움
+            rx_index = 0;
+        } else {
+            if (rx_index < RX_BUF_SIZE - 1) {
+                rx_buf[rx_index++] = rx_byte;
+            } else {
+                rx_index = 0;  // 오버플로우 방지
+            }
+        }
+        HAL_UART_Receive_IT(&huart3, &rx_byte, 1);
+    }
+}
+
+
+void process_command(char* raw_cmd) {
+    const int fixed_speed = 100;
+    const int fixed_acc = 50;
+
+   /* AGV 모터 명령인지 확인 후 동작*/
+    int left = 0, right = 0;
+    if (sscanf(raw_cmd, "L%dR%d", &left, &right) == 2) {
+        //printf("[AGV] Parsed → L=%d, R=%d\n", left, right);
+        set_motor_pwm((int)left,(int)right);  // AGV 모터 동작
+        return;  // AGV 명령이면 여기서 끝
+    }
+
+    /* 로봇 암 명령 처리 */
+    ServoCommand commands[MAX_COMMANDS];
+    int command_count = 0;
+
+    for (char* token = strtok(raw_cmd, ",");
+         token && command_count < MAX_COMMANDS;
+         token = strtok(NULL, ","))
+    {
+        int id = 0, pos = 0;
+        if (sscanf(token, "%d:%d", &id, &pos) == 2) {
+            commands[command_count++] = (ServoCommand){id, pos};
+            printf("Parsed → ID=%d, POS=%d\r\n", id, pos);
+        } else {
+            printf("⚠️ Parse error: %s\r\n", token);
+        }
+    }
+
+    for (int i = 0; i < command_count; i++) {
+        servo.RegWritePosEx(commands[i].id, commands[i].pos, fixed_speed, fixed_acc);
+        HAL_Delay(50);
+    }
+
+    HAL_Delay(100);
+    printf("[ACT] Executing Action()\r\n");
+    servo.Action();
+}
+
+
+/* --- 모터 PWM + 방향 제어 함수 --- */
+void set_motor_pwm(int left, int right)
+{
+    // 1) PWM 듀티 계산 (0 ~ 1000)
+    uint16_t pwm_L = (uint16_t)(fminf(fabsf(left)  * 10.0f, 1000.0f));
+    uint16_t pwm_R = (uint16_t)(fminf(fabsf(right) * 10.0f, 1000.0f));
+
+    // 2) 방향 제어 (IN1/IN2)
+    // Left
+    if (left > 0) {
+        // 전진
+        HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In1_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In2_Pin, GPIO_PIN_RESET);
+    } else if (left < 0) {
+        // 후진
+        HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In1_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In2_Pin, GPIO_PIN_SET);
+    } else if(left == 0) {
+        // 정지→Coast
+        HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In1_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(Left_GPIO_Port, Left_Motor_In2_Pin, GPIO_PIN_RESET);
+    }
+
+    // Right
+    if (right > 0) {
+        // 전진
+        HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In1_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In2_Pin, GPIO_PIN_RESET);
+    } else if (right < 0) {
+        // 후진
+        HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In1_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In2_Pin, GPIO_PIN_SET);
+    } else if(right == 0){
+        // 정지→Coast
+        HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In1_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(Right_GPIO_Port, Right_Motor_In2_Pin, GPIO_PIN_RESET);
+    }
+
+    // 3) PWM 출력 (ENA/ENB)
+    // TIM_CHANNEL_2 → Left_PWM (PD13)
+    // TIM_CHANNEL_3 → Right_PWM (PD14)
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm_L);
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, pwm_R);
+}
+
+
+
+
+/* --- 적외선 센서 상태 전송 함수 --- */
+void send_infrared_feedback() {
+    uint8_t s1 = HAL_GPIO_ReadPin(GPIOC, Front_Infrared1);
+    uint8_t s2 = HAL_GPIO_ReadPin(GPIOC, Front_Infrared2);
+    char msg[32];
+    sprintf(msg, "s1%ds2%d\n", s1 == GPIO_PIN_RESET ? 1 : 0, s2 == GPIO_PIN_RESET ? 1 : 0);
+    HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+}
 
 /* USER CODE END 0 */
 
@@ -132,6 +265,12 @@ int main(void)
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* creation of myTask02 */
+  myTask02Handle = osThreadNew(StartTask02, NULL, &myTask02_attributes);
+
+  /* creation of myTask03 */
+  myTask03Handle = osThreadNew(StartTask03, NULL, &myTask03_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -388,9 +527,75 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+
     osDelay(1);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartTask02 */
+/**
+* @brief Function implementing the myTask02 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask02 */
+void StartTask02(void *argument)
+{
+  /* USER CODE BEGIN StartTask02 */
+  /* Infinite loop */
+  for(;;)
+  {
+	  if (command_ready == 1) {
+	  	  	    command_ready = 0;  // 플래그 클리어
+	  	  	    process_command((char*)rx_buf);
+	  	  	    memset(rx_buf, 0, sizeof(rx_buf));  // 버퍼 클리어
+	  	  	}
+
+	  	  	send_infrared_feedback();
+    osDelay(1);
+  }
+  /* USER CODE END StartTask02 */
+}
+
+/* USER CODE BEGIN Header_StartTask03 */
+/**
+* @brief Function implementing the myTask03 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask03 */
+void StartTask03(void *argument)
+{
+  /* USER CODE BEGIN StartTask03 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartTask03 */
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM3 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM3)
+  {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
 }
 
 /**
