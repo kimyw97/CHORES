@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (12.3.rel1)
+# Toolchain: GNU Tools for STM32 (13.3.rel1)
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
@@ -12,6 +12,7 @@ CPP_SRCS += \
 ../Core/Src/main.cpp 
 
 C_SRCS += \
+../Core/Src/main.c \
 ../Core/Src/servo.c \
 ../Core/Src/stm32f4xx_hal_msp.c \
 ../Core/Src/stm32f4xx_it.c \
@@ -22,6 +23,7 @@ C_SRCS += \
 ../Core/Src/usart.c 
 
 C_DEPS += \
+./Core/Src/main.d \
 ./Core/Src/servo.d \
 ./Core/Src/stm32f4xx_hal_msp.d \
 ./Core/Src/stm32f4xx_it.d \
