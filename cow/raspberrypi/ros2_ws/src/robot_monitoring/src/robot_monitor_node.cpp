@@ -37,7 +37,8 @@ private:
             "TRASH:(\\d);"
             "EMERGENCY:(\\d);"
             "ENCODER:L(-?\\d+),R(-?\\d+);"
-            "ACC:(-?\\d+),(-?\\d+),(-?\\d+)");
+            "ACC:(-?\\d+),(-?\\d+),(-?\\d+),"
+            "GYRO:(-?\\d+),(-?\\d+),(-?\\d+)");
 
         std::smatch match;
 
