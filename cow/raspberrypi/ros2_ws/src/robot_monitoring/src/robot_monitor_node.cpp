@@ -38,9 +38,7 @@ private:
             "EMERGENCY:(\\d);"
             "ENCODER:L(-?\\d+),R(-?\\d+);"
             "ACC:(-?\\d+),(-?\\d+),(-?\\d+),"
-            "GYRO:(-?\\d+),(-?\\d+),(-?\\d+),"
-            "MAG:(-?\\d+),(-?\\d+),(-?\\d+),"
-            "ORI:(-?\\d+\\.?\\d*),(-?\\d+\\.?\\d*),(-?\\d+\\.?\\d*)");
+            "GYRO:(-?\\d+),(-?\\d+),(-?\\d+)");
 
         std::smatch match;
 
@@ -61,14 +59,6 @@ private:
           msg.gyro_x = std::stoi(match[10]);
           msg.gyro_y = std::stoi(match[11]);
           msg.gyro_z = std::stoi(match[12]);
-
-          msg.mag_x = std::stoi(match[13]);
-          msg.mag_y = std::stoi(match[14]);
-          msg.mag_z = std::stoi(match[15]);
-
-          msg.ori_roll = std::stof(match[16]);
-          msg.ori_pitch = std::stof(match[17]);
-          msg.ori_yaw = std::stof(match[18]);
 
           status_pub_->publish(msg);
           RCLCPP_INFO(this->get_logger(), "Published robot status with IMU, "

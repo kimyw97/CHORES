@@ -16,8 +16,8 @@
 
 ### 공통
 - ROS2 기반 제어 및 통합 제어
-- 통신: ESP32 WiFi, 상태 통신 프로토콜 구성
-- 사용 보드: STM32, ESP32, RaspberryPi 4
+- 통신: 시리얼 통신(UART) 상태 통신 프로토콜 구성
+- 사용 보드: STM32, Arduino, RaspberryPi 4
 
 ---
 
@@ -25,9 +25,9 @@
 
 ### 하드웨어
 - Housing: 3D 프린팅
-- 제어 보드: STM32, ESP32
-- 센서: RaspberryPi 4 + Camera
-- 모터 구동: DC Motor
+- 제어 보드: STM32F4Discovery
+- 센서: RaspberryPi 4 + Camera, 초음파 센서, 휠 엔코더
+- 모터 구동: DC Motor(JGB37-520)
 - 배터리 구동 방식
 
 ### 소프트웨어
@@ -43,10 +43,10 @@
 ## 큰 로봇 (소)
 
 ### 하드웨어
-- Housing: 알루미늄 프로파일 설계
-- 센서: LiDAR, Camera, Laser 거리 측정기
-- 모터 구동: DC Motor
-- 리프트: 리니어 액추에이터 활용
+- Housing: 알루미늄 프로파일 설계 + 3D 프린팅
+- 센서: LiDAR, Camera, Tof Camera, IR 센서
+- 모터 구동: DC Motor(JGB37-520)
+- 리프트: 스템 모터 + 스크류
 - 쓰레받기 구조 설계
 
 ### 소프트웨어
@@ -54,7 +54,6 @@
 - 자율 주행 및 지도 생성
 - 바닥 쓰레기 수거 알고리즘
 - 두꺼비 리프트 승강 알고리즘
-- 자동 충전 및 배터리 관리
 
 ---
 
@@ -74,19 +73,15 @@
 
 ---
 
-## 프로젝트 일정 및 진행 현황
-| 단계 | 진행 내역 | 상태 |
-|------|-----------|------|
-| 기획 | 시스템 구조 및 요구사항 정의 | 진행중 |
-| 설계 | 하드웨어 및 소프트웨어 설계 | 예정 |
-| 개발 | 개별 모듈 개발 및 통합 | 예정 |
-| 테스트 | 기능 검증 및 시뮬레이션 | 예정 |
-| 배포 | Github Repository 관리 | 예정 |
-
----
-
 ## 기대 성과 및 향후 발전 방향
 - 가사 노동 보조 로봇의 기술적 검증 및 프로토타입 개발
 - ROS2 기반 모듈화로 다양한 로봇 하드웨어 확장 가능
 - 향후 서비스 로봇 시장 진출 및 상용화 목표
 - IoT 플랫폼 연동 및 원격 제어 고도화 계획
+
+---
+## 결과물 영상
+[![Video Label](http://img.youtube.com/vi/LkkKx4DKlqo/0.jpg)](https://youtu.be/LkkKx4DKlqo?si=RUnRSefAHjjRh4Iu)
+
+## PPT 자료
+https://drive.google.com/file/d/1cT1KuXMvlJSRaIuF8e1CIJaahMBwPHPy/view
