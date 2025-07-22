@@ -2,7 +2,7 @@
 
 ekf_filter_node:
   ros__parameters:
-    frequency: 30.0
+    frequency: 60.0
     sensor_timeout: 0.1
 
     # 프레임 설정
@@ -12,28 +12,36 @@ ekf_filter_node:
     publish_tf: true
     map_frame: map # 필수 파라미터
 
-    two_d_mode: true
+    two_d_mode: true # 2d,로봇이 평면 환경에서 작동하는지
     transform_time_offset: 0.0
     print_diagnostics: true
-    use_control: false
+    use_control: true
+    acceleration_limits: [0.45, 0.0, 0.0, 0.0, 0.0, 0.20]
+
+    acceleration_gains: [0.6, 0.0, 0.0, 0.0, 0.0, 0.6]
+
+    control_timeout: 2.0
+
+    control_config: [true, false, false, false, false, true]
 
     # ---------------------------------------
     # 오도메트리 센서 설정 (wheel encoder 기반)
+    # X,Y,Z,roll,pitch,yaw,X˙,Y˙,Z˙,roll˙,pitch˙,yaw˙,X¨,Y¨,Z¨
+
     odom0: odom
-    odom0_config:
-      [
+    odom0_config: [
+        false,
+        false,
+        false, # X, Y, Z (position)
+        false,
+        false,
+        false, # roll, pitch, yaw (orientation)
         true,
         true,
+        false, # X˙, Y˙, Z˙ (velocity)
         false,
         false,
-        false,
-        true,
-        true,
-        false,
-        false,
-        false,
-        false,
-        true,
+        true, # roll˙, pitch˙, yaw˙ (angular velocity)
         false,
         false,
         false,
@@ -47,17 +55,20 @@ ekf_filter_node:
     imu0_config: [
         false,
         false,
-        false, # orientation x, y, z
+        false, # X, Y, Z (position) -> IMU는 위치 정보 없음
         false,
         false,
-        false, # only yaw
+        true, # roll, pitch, yaw -> Yaw만 사용
         false,
         false,
-        false, # linear velocity
+        false, # X˙, Y˙, Z˙ (velocity)
         false,
         false,
-        true, # angular velocity only yaw
+        true, # roll˙, pitch˙, yaw˙ -> Yaw angular velocity
+        true,
+        false,
+        false,
       ]
+
     imu0_differential: false
     imu0_relative: false
-    imu0_remove_gravitational_acceleration: false # STM32에서 중력 제거 안 했을 경우
