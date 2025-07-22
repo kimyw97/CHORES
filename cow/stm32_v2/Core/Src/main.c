@@ -126,8 +126,6 @@ int main(void)
 
 	// 가속도 초기화
 	BSP_ACCELERO_Init();
-	float gyro_data[3];
-	int16_t accel_data[3];
 	motorStart();
 	setMotorMode(FORWARD);
 	motorShutdown();
