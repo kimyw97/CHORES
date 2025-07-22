@@ -78,3 +78,10 @@
 - ROS2 기반 모듈화로 다양한 로봇 하드웨어 확장 가능
 - 향후 서비스 로봇 시장 진출 및 상용화 목표
 - IoT 플랫폼 연동 및 원격 제어 고도화 계획
+
+---
+## 결과물 영상
+<iframe width="560" height="315" src="https://www.youtube.com/embed/LkkKx4DKlqo?si=R8uJgJQSAXZit_LL" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+## PPT 자료
+https://drive.google.com/file/d/1cT1KuXMvlJSRaIuF8e1CIJaahMBwPHPy/view
