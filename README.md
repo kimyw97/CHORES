@@ -81,7 +81,7 @@
 
 ---
 ## 결과물 영상
-<iframe width="560" height="315" src="https://www.youtube.com/embed/LkkKx4DKlqo?si=R8uJgJQSAXZit_LL" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+[![Video Label](http://img.youtube.com/vi/LkkKx4DKlqo/0.jpg)](https://youtu.be/LkkKx4DKlqo?si=RUnRSefAHjjRh4Iu)
 
 ## PPT 자료
 https://drive.google.com/file/d/1cT1KuXMvlJSRaIuF8e1CIJaahMBwPHPy/view
