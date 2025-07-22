@@ -32,6 +32,7 @@
 #include "stdio.h"
 #include "tim.h"
 #include "usart.h"
+#include "math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -150,7 +151,7 @@ void vmonitoring(void *argument)
 	char tx_buffer[256];
 	for (;;) {
 		int32_t left_encoder = readEncoder(&htim3);
-		int32_t right_encoder = readEncoder(&htim2);
+		int32_t right_encoder = readEncoder(&htim4);
 
 		updateImuData();  // BSP 기반 값으로 업데이트
 
@@ -161,13 +162,11 @@ void vmonitoring(void *argument)
 		int emergency_state = 0;
 
 		snprintf(tx_buffer, sizeof(tx_buffer),
-				"SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%d,R%d;ACC:%d,%d,%d,GYRO:%d,%d,%d,MAG:%d,%d,%d,ORI:%.3f,%.3f,%.3f\n",
+				"SPEED:L%d,R%d;TRASH:%d;EMERGENCY:%d;ENCODER:L%d,R%d;ACC:%d,%d,%d,GYRO:%d,%d,%d\n",
 				current_left_pwm, current_right_pwm, trash_state,
 				emergency_state, left_encoder, right_encoder, sharedImuData.ax,
 				sharedImuData.ay, sharedImuData.az, sharedImuData.gx,
-				sharedImuData.gy, sharedImuData.gz, sharedImuData.mx,
-				sharedImuData.my, sharedImuData.mz, sharedImuData.pitch,
-				sharedImuData.roll, sharedImuData.yaw);
+				sharedImuData.gy, sharedImuData.gz);
 
 		HAL_UART_Transmit(&huart4, (uint8_t*) tx_buffer, strlen(tx_buffer),
 		HAL_MAX_DELAY);
@@ -245,34 +244,25 @@ void parseCommand(char *cmd) {
 }
 
 void updateImuData() {
-	int16_t acc[3];
-	float gyro[3];
-	float gyro_data[3];
-	int16_t accel_data[3];
+    int16_t acc[3];
+    float   gyro_f[3];
 
-	BSP_ACCELERO_GetXYZ(acc);     // int16_t[3]
-	BSP_GYRO_GetXYZ(gyro);        // float[3]
+    /* 1) 센서 읽기 -------------------------------------------------------- */
+    BSP_ACCELERO_GetXYZ(acc);        // ±2 g, raw LSB
+    BSP_GYRO_GetXYZ  (gyro_f);       // °/s,   float
 
-	osSemaphoreAcquire(imuMutexHandle, osWaitForever);
+    /* 2) 공유 구조체 보호 -------------------------------------------------- */
+    osSemaphoreAcquire(imuMutexHandle, osWaitForever);
 
-	sharedImuData.ax = acc[0];
-	sharedImuData.ay = acc[1];
-	sharedImuData.az = acc[2];
+    sharedImuData.ax = acc[0];
+    sharedImuData.ay = acc[1];
+    sharedImuData.az = acc[2];
 
-	sharedImuData.gx = (int16_t) (gyro[0]);
-	sharedImuData.gy = (int16_t) (gyro[1]);
-	sharedImuData.gz = (int16_t) (gyro[2]);
+    sharedImuData.gx = (int16_t)gyro_f[0];
+    sharedImuData.gy = (int16_t)gyro_f[1];
+    sharedImuData.gz = (int16_t)gyro_f[2];
 
-	sharedImuData.mx = 0;
-	sharedImuData.my = 0;
-	sharedImuData.mz = 0;
-
-	sharedImuData.temperature = 0.0f;
-	sharedImuData.pitch = 0.0f;
-	sharedImuData.roll = 0.0f;
-	sharedImuData.yaw = 0.0f;
-
-	osSemaphoreRelease(imuMutexHandle);
+    osSemaphoreRelease(imuMutexHandle);
 }
 /* USER CODE END Application */
 
