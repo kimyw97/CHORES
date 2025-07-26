@@ -13,7 +13,7 @@ public:
     serial_.open("/dev/ttyAMA0");
     serial_.setf(std::ios::skipws);
     if (!serial_.is_open()) {
-      RCLCPP_FATAL(this->get_logger(), "Failed to open /dev/serial0");
+      RCLCPP_FATAL(this->get_logger(), "Failed to open /dev/ttyAMA0");
       rclcpp::shutdown();
     } else {
       RCLCPP_INFO(this->get_logger(),
