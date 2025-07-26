@@ -261,9 +261,6 @@ void setMotorMode(DriveMode mode) {
 
 void setMotorSpeed(char motor_position, int speed) {
 	int pwm = abs(speed) * 10;
-	if (pwm <= 30) {
-		pwm = 35;
-	}
 	if (motor_position == 'L') {
 //		current_left_pwm = speed;
 		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm);
