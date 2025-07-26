@@ -10,7 +10,7 @@ public:
   RobotMonitorNode() : Node("robot_monitor_node") {
     status_pub_ = this->create_publisher<robot_monitoring::msg::RobotStatus>(
         "robot_status", 10);
-    serial_.open("/dev/serial0");
+    serial_.open("/dev/ttyAMA0");
     serial_.setf(std::ios::skipws);
     if (!serial_.is_open()) {
       RCLCPP_FATAL(this->get_logger(), "Failed to open /dev/serial0");
