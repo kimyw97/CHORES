@@ -11,7 +11,7 @@ public:
     CmdVelToSerial()
     : Node("cmdvel_to_serial")
     {
-        this->declare_parameter("port", "/dev/serial0");
+        this->declare_parameter("port", "/dev/ttyAMA0");
         this->declare_parameter("baudrate", 115200);
         this->declare_parameter("wheel_base", 0.3);  // 바퀴 간 거리
 
